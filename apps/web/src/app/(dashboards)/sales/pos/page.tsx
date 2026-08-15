@@ -289,6 +289,16 @@ export default function POSPage() {
 		setCart((prev) => prev.filter((item) => item.id !== id));
 	};
 
+	const updatePrice = (id: number, value: string) => {
+		setCart((prev) =>
+			prev.map((item) =>
+				item.id === id
+					? { ...item, price: value, customPrice: true }
+					: item,
+			),
+		);
+	};
+
 	const handleCheckout = () => {
 		if (cart.length === 0) return toast.error("Cart is empty");
 		setPaymentModalOpen(true);
@@ -472,13 +482,27 @@ export default function POSPage() {
 													<Plus className="h-3 w-3" />
 												</Button>
 											</div>
-											<div className="flex items-center gap-3">
+											<div className="flex items-center gap-2">
 												<span className="font-bold text-sm">
-													₹
-													{(Number.parseFloat(item.price) * item.qty).toFixed(
-														2,
-													)}
+													₹{(Number.parseFloat(item.price) * item.qty).toFixed(2)}
 												</span>
+												<div className="relative flex items-center">
+													<span className="pointer-events-none absolute left-1.5 text-muted-foreground text-xs">₹</span>
+													<input
+														type="number"
+														min="0"
+														step="0.01"
+														value={item.price}
+														onChange={(e) => updatePrice(item.id, e.target.value)}
+														disabled={checkoutMutation.isPending}
+														title="Edit price for this item"
+														className={`h-7 w-20 rounded border pl-5 pr-1 text-right text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors ${
+															item.customPrice
+																? "border-amber-400 bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300"
+																: "border-input bg-background text-foreground"
+														}`}
+													/>
+												</div>
 												<Button
 													variant="ghost"
 													size="icon"
