@@ -330,11 +330,20 @@ export default function POSPage() {
 		} as any);
 	};
 
-	const filteredCatalog = catalog?.filter(
-		(p) =>
-			p.name.toLowerCase().includes(search.toLowerCase()) ||
-			p.barcode?.includes(search),
-	);
+	// Assign a stable sequential number to every product based on full catalog order
+	const catalogWithNumbers = catalog?.map((p, i) => ({ ...p, catalogNo: i + 1 })) ?? [];
+
+	const filteredCatalog = catalogWithNumbers.filter((p) => {
+		const q = search.trim().toLowerCase();
+		if (!q) return true;
+		// Search by catalog number (exact)
+		if (String(p.catalogNo) === search.trim()) return true;
+		// Search by name or barcode
+		return (
+			p.name.toLowerCase().includes(q) ||
+			p.barcode?.toLowerCase().includes(q)
+		);
+	});
 
 	return (
 		<PageTransition className="flex h-[calc(100vh-64px)] overflow-hidden bg-muted/40">
@@ -358,11 +367,22 @@ export default function POSPage() {
 				<div className="relative mb-4 shrink-0">
 					<Search className="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
 					<Input
-						placeholder="Search products by name or scan barcode..."
+						placeholder="Search by name, #number or barcode..."
 						value={search}
 						onChange={(e) => setSearch(e.target.value)}
 						className="bg-background pl-9"
+						autoComplete="off"
 					/>
+					{search && (
+						<button
+							type="button"
+							onClick={() => setSearch("")}
+							className="absolute top-2.5 right-3 rounded p-0.5 text-muted-foreground hover:text-foreground"
+							aria-label="Clear search"
+						>
+							✕
+						</button>
+					)}
 				</div>
 
 				<ScrollArea className="min-h-0 flex-1">
@@ -381,10 +401,14 @@ export default function POSPage() {
 								<StaggerItem key={product.id}>
 									<AnimatedCard>
 										<Card
-											className="flex h-full cursor-pointer flex-col justify-between border-transparent shadow-sm transition-colors hover:border-primary/50"
+											className="relative flex h-full cursor-pointer flex-col justify-between border-transparent shadow-sm transition-colors hover:border-primary/50"
 											onClick={() => addToCart(product)}
 										>
-											<CardHeader className="p-4 pb-2">
+											{/* Catalog number badge */}
+											<span className="absolute top-2 right-2 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-muted px-1.5 font-mono text-[10px] font-bold text-muted-foreground leading-none">
+												#{product.catalogNo}
+											</span>
+											<CardHeader className="p-4 pb-2 pr-10">
 												<CardTitle
 													className="truncate font-semibold text-sm"
 													title={product.name}
