@@ -4,7 +4,7 @@
 # Optional: The project currently defaults to a local PGLite database at './data/pglite' if this is missing.
 # If you plan to connect to an external PostgreSQL database, provide the connection string here:
 # DATABASE_URL=postgresql://user:password@localhost:5432/evaluna-erp
-DATABASE_URL="postgresql://neondb_owner:npg_USIF1tumG4yB@ep-snowy-violet-aokwego4.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+DATABASE_URL="postgresql://neondb_owner:npg_uA9kwG5ZXYfO@ep-lingering-thunder-a7ton7da-pooler.ap-southeast-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
 
 # Better Auth Configuration (Required for Sessions)
 # Generate a strong 32-character random string for production

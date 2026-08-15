@@ -2,14 +2,10 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "./schema";
 
-const DATABASE_URL = process.env.DATABASE_URL;
+const DATABASE_URL = process.env.DATABASE_URL || "postgresql://mock:mock@localhost:5432/mock";
 
-if (!DATABASE_URL) {
-	throw new Error("DATABASE_URL is not set!");
-}
-
-if (DATABASE_URL.startsWith('"') && DATABASE_URL.endsWith('"')) {
-	console.warn("DATABASE_URL has quotes, stripping them");
+if (!process.env.DATABASE_URL) {
+	console.warn("DATABASE_URL is not set! Using mock URL for build-time compilation.");
 }
 
 const cleanUrl = DATABASE_URL.replace(/^"|"$/g, "");
