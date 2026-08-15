@@ -458,13 +458,7 @@ export function SaleCompletionScreen({
 								</div>
 							</div>
 						</div>
-						<div className="flex items-center gap-2">
-							<span
-								className={`inline-flex items-center rounded-full border px-3 py-1 font-semibold text-xs ${status.color}`}
-							>
-								{status.label}
-							</span>
-						</div>
+		
 					</div>
 
 					<div className="flex min-h-0 flex-1 overflow-hidden">
