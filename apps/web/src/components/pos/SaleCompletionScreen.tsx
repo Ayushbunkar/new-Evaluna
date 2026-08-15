@@ -346,17 +346,6 @@ export function SaleCompletionScreen({
 						</View>
 						<View style={styles.separator} />
 
-						{/* Payment Details */}
-						<Text style={[styles.bold, { marginTop: 4, marginBottom: 4 }]}>PAYMENT DETAILS</Text>
-						{order.payments.map((p, idx) => (
-							<View key={idx} style={styles.row}>
-								<Text>{PAYMENT_METHOD_LABELS[p.methodId] ?? "Payment"}</Text>
-								<Text>Rs.{Number.parseFloat(p.amount).toFixed(2)}</Text>
-							</View>
-						))}
-
-						<View style={styles.separator} />
-
 						{/* Footer */}
 						<View style={styles.footer}>
 							<Text style={[styles.bold, { marginBottom: 2, fontSize: isA4 ? 12 : 9 }]}>Thank you for shopping!</Text>
