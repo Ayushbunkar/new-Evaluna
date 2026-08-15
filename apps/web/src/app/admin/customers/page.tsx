@@ -66,7 +66,7 @@ export default function CustomersPage() {
 
 	const customerFormSchema = z.object({
 		name: z.string().min(1, t("nameRequired")),
-		email: z.string().email(t("invalidEmail")),
+		email: z.string().email(t("invalidEmail")).optional().or(z.literal("")),
 		phone: z.string(),
 		address: z.string(),
 		status: z.enum(["active", "inactive"]),
@@ -415,7 +415,7 @@ export default function CustomersPage() {
 								<form.Field name="email">
 									{(field) => (
 										<div className="flex flex-col gap-2 sm:grid sm:grid-cols-4 sm:items-center sm:gap-4">
-											<Label htmlFor="email">{tc("email")}</Label>
+											<Label htmlFor="email">{tc("email")} <span className="text-xs font-normal text-muted-foreground">(optional)</span></Label>
 											<div className="col-span-3">
 												<Input
 													id="email"
