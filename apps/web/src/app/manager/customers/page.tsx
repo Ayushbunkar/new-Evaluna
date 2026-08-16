@@ -88,6 +88,7 @@ export default function CustomersPage() {
 		},
 		{ key: "email", header: tc("email"), sortable: true },
 		{ key: "phone", header: tc("phone"), hideOnMobile: true },
+		{ key: "address", header: tc("address"), hideOnMobile: true },
 		{
 			key: "loyalty_tier",
 			header: "Tier",
