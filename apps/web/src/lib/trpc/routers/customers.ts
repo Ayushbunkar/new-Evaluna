@@ -9,7 +9,7 @@ const customerSchema = z
 		id: z.number(),
 		customer_code: z.string().nullable(),
 		name: z.string(),
-		email: z.string(),
+		email: z.string().nullable(),
 		phone: z.string().nullable(),
 		address: z.string().nullable(),
 		status: z.string().nullable(),
