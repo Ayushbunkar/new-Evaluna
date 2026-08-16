@@ -113,7 +113,7 @@ export const customersRouter = router({
 				const code = `CUST-${Math.floor(1000 + Math.random() * 9000)}`;
 				// Accept empty string or undefined — generate a unique placeholder for the DB NOT NULL + UNIQUE constraint
 				const emailInput = input.email?.trim();
-				const emailToUse = emailInput || `noemail-${code.toLowerCase()}-${Date.now()}@evaluna.internal`;
+				const emailToUse = emailInput || null;
 				const [data] = await db
 					.insert(customers)
 					.values({

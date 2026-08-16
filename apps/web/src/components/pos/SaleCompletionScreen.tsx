@@ -37,6 +37,7 @@ interface CompletedOrder {
 	customerName?: string;
 	customerPhone?: string;
 	shopName?: string;
+	address?: string;
 	couponCode?: string;
 }
 
@@ -291,6 +292,12 @@ export function SaleCompletionScreen({
 										<Text>{order.customerPhone}</Text>
 									</View>
 								)}
+								{order.address && (
+									<View style={styles.row}>
+										<Text>Address:</Text>
+										<Text>{order.address}</Text>
+									</View>
+								)}
 							</>
 						)}
 
@@ -390,6 +397,7 @@ export function SaleCompletionScreen({
 			if (order.customerName) customerText += `• Name: ${order.customerName}\n`;
 			if (order.shopName) customerText += `• Shop: ${order.shopName}\n`;
 			if (order.customerPhone) customerText += `• Phone: ${order.customerPhone}\n`;
+			if (order.address) customerText += `• Address: ${order.address}\n`;
 		}
 
 		const fullText = `🧾 *INVOICE #${order.id}*\n*${STORE.name}*\n_${STORE.address}, ${STORE.city}_\n📞 Phone: ${STORE.phone}\n--------------------------------\n*Date:* ${formattedDate}\n*Cashier:* ${order.cashierName || "Counter 1"}\n${customerText}--------------------------------\n*ITEMS:*\n${itemsText}--------------------------------\n*Subtotal:* ₹${order.subtotal.toFixed(2)}\n*Grand Total:* *₹${grandTotal.toFixed(2)}*\n*Payment:* ${order.payments.map((p) => `${PAYMENT_METHOD_LABELS[p.methodId] ?? "Payment"}: ₹${Number.parseFloat(p.amount).toFixed(2)}`).join(", ")}\n--------------------------------\nThank you for shopping!\n_*EVALUNA PVT LTD*_`;
@@ -567,6 +575,12 @@ export function SaleCompletionScreen({
 														<>
 															<div className="text-gray-500">Phone</div>
 															<div className="text-right">{order.customerPhone}</div>
+														</>
+													)}
+													{order.address && (
+														<>
+															<div className="text-gray-500">Address</div>
+															<div className="text-right">{order.address}</div>
 														</>
 													)}
 												</div>

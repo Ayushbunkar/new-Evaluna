@@ -22,6 +22,7 @@ export function PaymentModal({
 	const [customerName, setCustomerName] = useState("");
 	const [customerPhone, setCustomerPhone] = useState("");
 	const [shopName, setShopName] = useState("");
+	const [address, setAddress] = useState("");
 	const [customerId, setCustomerId] = useState<number | null>(null);
 	const [customerCode, setCustomerCode] = useState("");
 
@@ -55,6 +56,7 @@ export function PaymentModal({
 			setCustomerName("");
 			setCustomerPhone("");
 			setShopName("");
+			setAddress("");
 			setCustomerId(null);
 			setCustomerCode("");
 			setSearchQuery("");
@@ -78,6 +80,7 @@ export function PaymentModal({
 		setCustomerName(customer.name ?? "");
 		setCustomerPhone(customer.phone ?? "");
 		setShopName(""); // customers table doesn't have shop name separately
+		setAddress(customer.address ?? "");
 		setCustomerId(customer.id);
 		setCustomerCode(customer.customer_code ?? "");
 		setSearchQuery(customer.name ?? "");
@@ -89,6 +92,7 @@ export function PaymentModal({
 		setCustomerName("");
 		setCustomerPhone("");
 		setShopName("");
+		setAddress("");
 		setCustomerId(null);
 		setCustomerCode("");
 		setSearchQuery("");
@@ -102,6 +106,7 @@ export function PaymentModal({
 			customerName: customerName.trim() || undefined,
 			customerPhone: customerPhone.trim() || undefined,
 			shopName: shopName.trim() || undefined,
+			address: address.trim() || undefined,
 		});
 		onOpenChange(false);
 	};
@@ -200,16 +205,23 @@ export function PaymentModal({
 
 							{/* Selected customer pill */}
 							{selectedFromDB && customerId && (
-								<div className="flex items-center gap-2 rounded-md border border-primary/30 bg-primary/5 px-3 py-1.5 text-sm">
-									<User className="h-3.5 w-3.5 text-primary shrink-0" />
-									<span className="font-medium text-primary">{customerName}</span>
-									{customerCode && (
-										<span className="rounded bg-primary/10 px-1.5 font-mono text-[10px] text-primary">
-											{customerCode}
-										</span>
-									)}
-									{customerPhone && (
-										<span className="text-muted-foreground text-xs ml-auto">📞 {customerPhone}</span>
+								<div className="flex flex-col gap-1 rounded-md border border-primary/30 bg-primary/5 px-3 py-2 text-sm">
+									<div className="flex items-center gap-2">
+										<User className="h-3.5 w-3.5 text-primary shrink-0" />
+										<span className="font-medium text-primary">{customerName}</span>
+										{customerCode && (
+											<span className="rounded bg-primary/10 px-1.5 font-mono text-[10px] text-primary">
+												{customerCode}
+											</span>
+										)}
+										{customerPhone && (
+											<span className="text-muted-foreground text-xs ml-auto">📞 {customerPhone}</span>
+										)}
+									</div>
+									{address && (
+										<div className="text-xs text-muted-foreground mt-0.5 border-t border-primary/10 pt-1">
+											📍 {address}
+										</div>
 									)}
 								</div>
 							)}
@@ -237,6 +249,16 @@ export function PaymentModal({
 										placeholder="e.g. Sharma General Store"
 										value={shopName}
 										onChange={(e) => setShopName(e.target.value)}
+									/>
+								</div>
+
+								<div className="space-y-1.5">
+									<Label htmlFor="customerAddress">Address</Label>
+									<Input
+										id="customerAddress"
+										placeholder="e.g. Near Bus Stand, Main Market"
+										value={address}
+										onChange={(e) => setAddress(e.target.value)}
 									/>
 								</div>
 							</div>

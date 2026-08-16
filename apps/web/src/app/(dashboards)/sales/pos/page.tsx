@@ -44,7 +44,7 @@ export default function POSPage() {
 	const [paymentModalOpen, setPaymentModalOpen] = useState(false);
 	const [lastCompletedOrder, setLastCompletedOrder] = useState<any>(null);
 	const [resumeId, setResumeId] = useState<string | null>(null);
-	const [customerDetails, setCustomerDetails] = useState<{ customerName?: string; customerPhone?: string; shopName?: string }>({});
+	const [customerDetails, setCustomerDetails] = useState<{ customerName?: string; customerPhone?: string; shopName?: string; address?: string; customerId?: number }>({});
 
 	useEffect(() => {
 		if (typeof window !== "undefined") {
@@ -304,7 +304,7 @@ export default function POSPage() {
 		setPaymentModalOpen(true);
 	};
 
-	const finalizeOrder = (payments: any[], customer?: { customerName?: string; customerPhone?: string; shopName?: string }) => {
+	const finalizeOrder = (payments: any[], customer?: { customerName?: string; customerPhone?: string; shopName?: string; address?: string; customerId?: number }) => {
 		if (customer) setCustomerDetails(customer);
 
 		if (isOffline) {
@@ -316,6 +316,7 @@ export default function POSPage() {
 
 		setLastPayments(payments);
 		checkoutMutation.mutate({
+			customerId: customer?.customerId || undefined,
 			items: cart.map((c) => ({
 				productId: c.id,
 				quantity: c.qty,
