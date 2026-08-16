@@ -68,7 +68,10 @@ export const ordersRouter = router({
 		.output(orderDetailSchema.nullable())
 		.query(async ({ ctx, input }) => {
 			const result = await db.query.orders.findFirst({
-				where: and(eq(orders.id, input.id), eq(orders.user_uid, ctx.user.id)),
+				where: and(
+					eq(orders.id, input.id),
+					ctx.user.branchId ? eq(orders.branch_id, ctx.user.branchId) : undefined,
+				),
 				with: {
 					customer: { columns: { name: true } },
 					orderItems: {
@@ -94,7 +97,8 @@ export const ordersRouter = router({
 		.output(z.array(orderWithCustomerSchema))
 		.query(async ({ ctx }) => {
 			return db.query.orders.findMany({
-				where: eq(orders.user_uid, ctx.user.id),
+				where: ctx.user.branchId ? eq(orders.branch_id, ctx.user.branchId) : undefined,
+				orderBy: (orders, { desc }) => [desc(orders.created_at)],
 				with: {
 					customer: {
 						columns: { name: true },

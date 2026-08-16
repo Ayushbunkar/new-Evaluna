@@ -62,7 +62,7 @@ const messages: Messages = {
 		cashier: "कैशियर",
 		products: "उत्पाद",
 		customers: "ग्राहक",
-		orders: "ऑर्डर",
+		orders: "बिल इतिहास (Bills History)",
 		paymentMethods: "भुगतान के तरीके",
 		pos: "पॉइंट ऑफ़ सेल",
 		invoices: "चालान (Invoices)",

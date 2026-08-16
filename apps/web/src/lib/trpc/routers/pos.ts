@@ -8,6 +8,7 @@ import {
 	staff,
 	stockLedger,
 	transactions,
+	customers,
 } from "@evaluna/db/schema";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -148,6 +149,16 @@ export const posRouter = router({
 				}
 
 				// 3. Process Payments (Split Payments Supported, Batched)
+				let customerName = "Walk-in Customer";
+				if (input.customerId) {
+					const customer = await tx.query.customers.findFirst({
+						where: eq(customers.id, input.customerId),
+					});
+					if (customer) {
+						customerName = customer.name;
+					}
+				}
+
 				const paymentsToInsert = input.payments.map((payment) => ({
 					order_id: order.id,
 					payment_method_id: payment.methodId,
@@ -157,6 +168,7 @@ export const posRouter = router({
 					type: "in" as const,
 					category: "sale" as const,
 					status: "completed" as const,
+					description: `Order #${order.id} - ${customerName}`,
 				}));
 
 				if (paymentsToInsert.length > 0) {

@@ -1,8 +1,10 @@
-import { user } from "@evaluna/db/schema";
+import { auth } from "../apps/web/src/lib/auth";
+import { db } from "../apps/web/src/lib/db";
+import { user } from "../packages/db/src/schema";
 import { eq } from "drizzle-orm";
-import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
+import * as dotenv from "dotenv";
+
+dotenv.config();
 
 const USERS_TO_SEED = [
 	{ name: "Super Admin", email: "superadmin@evaluna.com", role: "superadmin" },
@@ -20,13 +22,13 @@ const USERS_TO_SEED = [
 	{ name: "Warehouse Packer", email: "packer@evaluna.com", role: "packer" },
 ];
 
-export async function POST() {
-	try {
-		const password = "Password@123";
-		const created = [];
+async function main() {
+	const password = "Password@123";
+	console.log("🚀 Starting user seeding directly to Database...");
 
-		for (const u of USERS_TO_SEED) {
-			// Check if exists
+	for (const u of USERS_TO_SEED) {
+		try {
+			// Check if user already exists
 			const existing = await db
 				.select({ id: user.id })
 				.from(user)
@@ -34,7 +36,7 @@ export async function POST() {
 				.limit(1);
 
 			if (existing.length === 0) {
-				// Create via better-auth
+				console.log(`Creating user: ${u.name} (${u.email}) with role: ${u.role}...`);
 				const result = await auth.api.signUpEmail({
 					body: {
 						email: u.email,
@@ -44,33 +46,28 @@ export async function POST() {
 				});
 
 				if (result) {
-					// Update role
+					// Update role to correct one
 					await db
 						.update(user)
 						.set({ role: u.role } as any)
 						.where(eq(user.email, u.email));
-
-					created.push(u.email);
+					console.log(`✅ Successfully created and updated role for ${u.email}`);
 				}
+			} else {
+				// User exists, make sure role is correct
+				await db
+					.update(user)
+					.set({ role: u.role } as any)
+					.where(eq(user.email, u.email));
+				console.log(`ℹ️ User ${u.email} already exists. Updated role to: ${u.role}`);
 			}
+		} catch (error: any) {
+			console.error(`❌ Failed to seed user ${u.email}:`, error?.message || error);
 		}
-
-		return NextResponse.json({
-			success: true,
-			message: "Test users seeded successfully!",
-			created,
-			password_for_all: password,
-			users: USERS_TO_SEED,
-		});
-	} catch (error: any) {
-		console.error("Seed users error:", error);
-		return NextResponse.json(
-			{ success: false, error: error?.message ?? "Unknown error" },
-			{ status: 500 },
-		);
 	}
+	
+	console.log("🎉 Seeding complete!");
+	process.exit(0);
 }
 
-export async function GET() {
-	return POST();
-}
+main();
