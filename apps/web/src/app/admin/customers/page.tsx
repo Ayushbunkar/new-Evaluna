@@ -66,7 +66,7 @@ export default function CustomersPage() {
 
 	const customerFormSchema = z.object({
 		name: z.string().min(1, t("nameRequired")),
-		email: z.string().email(t("invalidEmail")).optional().or(z.literal("")),
+		email: z.preprocess(v => (v === "" ? undefined : v), z.string().email(t("invalidEmail")).optional()),
 		phone: z.string(),
 		address: z.string(),
 		status: z.enum(["active", "inactive"]),

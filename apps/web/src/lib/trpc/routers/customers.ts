@@ -100,7 +100,7 @@ export const customersRouter = router({
 		.input(
 			z.object({
 				name: z.string().min(1),
-				email: z.string().email().optional().or(z.literal("")),
+				email: z.preprocess(v => (v === "" ? undefined : v), z.string().email().optional()),
 				phone: z.string().optional(),
 				address: z.string().optional(),
 				status: z.enum(["active", "inactive"]).optional(),
@@ -149,7 +149,7 @@ export const customersRouter = router({
 			z.object({
 				id: z.number(),
 				name: z.string().min(1).optional(),
-				email: z.string().email().optional(),
+				email: z.preprocess(v => (v === "" ? undefined : v), z.string().email().optional()),
 				phone: z.string().optional(),
 				address: z.string().optional(),
 				status: z.enum(["active", "inactive"]).optional(),
