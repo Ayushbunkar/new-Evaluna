@@ -140,19 +140,19 @@ export default function CustomerProfilePage() {
 
 				{/* Main Content Tabs */}
 				<div className="md:col-span-2">
-					<Tabs defaultValue="wallet" className="w-full">
+					<Tabs defaultValue="orders" className="w-full">
 						<TabsList className="w-full justify-start rounded-none border-b bg-transparent">
-							<TabsTrigger
-								value="wallet"
-								className="rounded-none data-[state=active]:border-primary data-[state=active]:border-b-2"
-							>
-								Wallet & Loyalty
-							</TabsTrigger>
 							<TabsTrigger
 								value="orders"
 								className="rounded-none data-[state=active]:border-primary data-[state=active]:border-b-2"
 							>
 								Purchase History
+							</TabsTrigger>
+							<TabsTrigger
+								value="wallet"
+								className="rounded-none data-[state=active]:border-primary data-[state=active]:border-b-2"
+							>
+								Wallet & Loyalty
 							</TabsTrigger>
 						</TabsList>
 

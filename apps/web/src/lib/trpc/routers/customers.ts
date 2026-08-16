@@ -1,5 +1,5 @@
 import { customerLedger, customers, orders } from "@evaluna/db/schema";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, isNull, or } from "drizzle-orm";
 import { z } from "zod/v4";
 import { db } from "@/lib/db";
 import { roleProcedure, router } from "../init";
@@ -40,9 +40,10 @@ export const customersRouter = router({
 				.select()
 				.from(customers)
 				.where(
-					ctx.user.branchId
-						? eq(customers.branch_id, ctx.user.branchId)
-						: undefined,
+					and(
+						ctx.user.branchId ? eq(customers.branch_id, ctx.user.branchId) : undefined,
+						or(eq(customers.is_deleted, false), isNull(customers.is_deleted))
+					)
 				);
 		}),
 
@@ -253,13 +254,15 @@ export const customersRouter = router({
 		.output(z.object({ success: z.boolean() }))
 		.mutation(async ({ ctx, input }) => {
 			await db
-				.delete(customers)
+				.update(customers)
+				.set({
+					is_deleted: true,
+					deleted_at: new Date(),
+				})
 				.where(
 					and(
 						eq(customers.id, input.id),
-						ctx.user.branchId
-							? eq(customers.branch_id, ctx.user.branchId)
-							: undefined,
+						ctx.user.branchId ? eq(customers.branch_id, ctx.user.branchId) : undefined,
 					),
 				);
 			return { success: true };

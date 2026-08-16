@@ -405,19 +405,19 @@ export default function CustomerIntelligencePage() {
 
 				{/* Main Content Tabs */}
 				<div className="lg:col-span-3">
-					<Tabs defaultValue="ledger" className="w-full">
+					<Tabs defaultValue="orders" className="w-full">
 						<TabsList className="h-12 w-full justify-start rounded-none border-b bg-transparent p-0">
-							<TabsTrigger
-								value="ledger"
-								className="h-full rounded-none px-6 font-medium data-[state=active]:border-primary data-[state=active]:border-b-2 data-[state=active]:shadow-none"
-							>
-								Transactions & Ledger
-							</TabsTrigger>
 							<TabsTrigger
 								value="orders"
 								className="h-full rounded-none px-6 font-medium data-[state=active]:border-primary data-[state=active]:border-b-2 data-[state=active]:shadow-none"
 							>
 								Recent Orders
+							</TabsTrigger>
+							<TabsTrigger
+								value="ledger"
+								className="h-full rounded-none px-6 font-medium data-[state=active]:border-primary data-[state=active]:border-b-2 data-[state=active]:shadow-none"
+							>
+								Transactions & Ledger
 							</TabsTrigger>
 						</TabsList>
 
