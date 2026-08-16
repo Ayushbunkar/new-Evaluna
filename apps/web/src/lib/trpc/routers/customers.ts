@@ -100,7 +100,7 @@ export const customersRouter = router({
 		.input(
 			z.object({
 				name: z.string().min(1),
-				email: z.string().email().optional(),
+				email: z.string().email().optional().or(z.literal("")),
 				phone: z.string().optional(),
 				address: z.string().optional(),
 				status: z.enum(["active", "inactive"]).optional(),
@@ -111,8 +111,9 @@ export const customersRouter = router({
 		.mutation(async ({ ctx, input }) => {
 			try {
 				const code = `CUST-${Math.floor(1000 + Math.random() * 9000)}`;
-				// If no email provided, generate a unique placeholder so DB constraint is satisfied
-				const emailToUse = input.email?.trim() || `noemail-${code.toLowerCase()}@evaluna.internal`;
+				// Accept empty string or undefined — generate a unique placeholder for the DB NOT NULL + UNIQUE constraint
+				const emailInput = input.email?.trim();
+				const emailToUse = emailInput || `noemail-${code.toLowerCase()}-${Date.now()}@evaluna.internal`;
 				const [data] = await db
 					.insert(customers)
 					.values({
