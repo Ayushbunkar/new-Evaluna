@@ -30,6 +30,7 @@ const messages: Messages = {
 		name: "नाम",
 		email: "ईमेल",
 		phone: "फोन",
+		address: "पता (Address)",
 		status: "स्थिति",
 		price: "कीमत",
 		description: "विवरण",

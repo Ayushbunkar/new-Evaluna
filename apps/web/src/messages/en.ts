@@ -28,6 +28,7 @@ const messages = {
 		name: "Name",
 		email: "Email",
 		phone: "Phone",
+		address: "Address",
 		status: "Status",
 		price: "Price",
 		description: "Description",

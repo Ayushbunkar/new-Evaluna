@@ -36,15 +36,16 @@ export const customersRouter = router({
 		.input(z.void())
 		.output(z.array(customerSchema))
 		.query(async ({ ctx }) => {
+			const conditions = [
+				or(eq(customers.is_deleted, false), isNull(customers.is_deleted))
+			];
+			if (ctx.user.branchId) {
+				conditions.push(eq(customers.branch_id, ctx.user.branchId));
+			}
 			return db
 				.select()
 				.from(customers)
-				.where(
-					and(
-						ctx.user.branchId ? eq(customers.branch_id, ctx.user.branchId) : undefined,
-						or(eq(customers.is_deleted, false), isNull(customers.is_deleted))
-					)
-				);
+				.where(and(...conditions));
 		}),
 
 	getById: roleProcedure(["admin", "manager", "auditor", "sales_person"])
@@ -253,18 +254,17 @@ export const customersRouter = router({
 		.input(z.object({ id: z.number() }))
 		.output(z.object({ success: z.boolean() }))
 		.mutation(async ({ ctx, input }) => {
+			const conditions = [eq(customers.id, input.id)];
+			if (ctx.user.branchId) {
+				conditions.push(eq(customers.branch_id, ctx.user.branchId));
+			}
 			await db
 				.update(customers)
 				.set({
 					is_deleted: true,
 					deleted_at: new Date(),
 				})
-				.where(
-					and(
-						eq(customers.id, input.id),
-						ctx.user.branchId ? eq(customers.branch_id, ctx.user.branchId) : undefined,
-					),
-				);
+				.where(and(...conditions));
 			return { success: true };
 		}),
 });
