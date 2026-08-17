@@ -64,74 +64,76 @@ export default function CustomersPage() {
 
 	const router = useRouter();
 
-	const customerFormSchema = z.object({
-		name: z.string().min(1, t("nameRequired")),
-		email: z.preprocess(v => (v === "" ? undefined : v), z.string().email(t("invalidEmail")).optional()),
-		phone: z.string(),
-		address: z.string(),
-		status: z.enum(["active", "inactive"]),
-	});
+const customerFormSchema = z.object({
+	name: z.string().min(1, t("nameRequired")),
+	email: z.preprocess(v => (v === "" ? undefined : v), z.string().email(t("invalidEmail")).optional()),
+	phone: z.string().optional(),
+	address: z.string().optional(),
+	village: z.string().optional(),
+	status: z.enum(["active", "inactive"]),
+});
 
-	const statusFilterOptions: FilterOption[] = [
-		{ label: tc("all"), value: "all" },
-		{ label: tc("active"), value: "active", variant: "success" },
-		{ label: tc("inactive"), value: "inactive", variant: "danger" },
-	];
+const statusFilterOptions: FilterOption[] = [
+	{ label: tc("all"), value: "all" },
+	{ label: tc("active"), value: "active", variant: "success" },
+	{ label: tc("inactive"), value: "inactive", variant: "danger" },
+];
 
-	const tableColumns: Column<Customer>[] = [
-		{ key: "customer_code", header: "ID", sortable: true },
-		{
-			key: "name",
-			header: tc("name"),
-			sortable: true,
-			className: "font-medium",
-		},
-		{ key: "email", header: tc("email"), sortable: true },
-		{ key: "phone", header: tc("phone"), hideOnMobile: true },
-		{ key: "address", header: tc("address"), hideOnMobile: true },
-		{
-			key: "loyalty_tier",
-			header: "Tier",
-			sortable: true,
-			render: (row) => (
-				<span
-					className={`rounded px-2 py-1 text-xs capitalize ${row.loyalty_tier === "gold" ? "bg-yellow-100 text-yellow-800" : row.loyalty_tier === "silver" ? "bg-gray-200 text-gray-800" : "bg-orange-100 text-orange-800"}`}
-				>
-					{row.loyalty_tier || "Bronze"}
-				</span>
-			),
-		},
-		{
-			key: "loyalty_points",
-			header: "Points",
-			sortable: true,
-			headerClassName: "text-right",
-			className: "text-right font-medium",
-			render: (row) => row.loyalty_points?.toString() || "0",
-		},
-		{
-			key: "store_credit",
-			header: "Credit",
-			sortable: true,
-			headerClassName: "text-right",
-			className: "text-right font-medium",
-			render: (row) => `₹${row.store_credit || "0.00"}`,
-		},
-		{
-			key: "status",
-			header: tc("status"),
-			sortable: true,
-			render: (row) => (
-				<span
-					className={
-						row.status === "active" ? "text-green-600" : "text-muted-foreground"
-					}
-				>
-					{row.status === "active" ? tc("active") : tc("inactive")}
-				</span>
-			),
-		},
-	];
+const tableColumns: Column<Customer>[] = [
+	{ key: "customer_code", header: "ID", sortable: true },
+	{
+		key: "name",
+		header: tc("name"),
+		sortable: true,
+		className: "font-medium",
+	},
+	{ key: "email", header: tc("email"), sortable: true },
+	{ key: "phone", header: tc("phone"), hideOnMobile: true },
+	{ key: "village", header: "Village", hideOnMobile: true },
+	{ key: "address", header: tc("address"), hideOnMobile: true },
+	{
+		key: "loyalty_tier",
+		header: "Tier",
+		sortable: true,
+		render: (row) => (
+			<span
+				className={`rounded px-2 py-1 text-xs capitalize ${row.loyalty_tier === "gold" ? "bg-yellow-100 text-yellow-800" : row.loyalty_tier === "silver" ? "bg-gray-200 text-gray-800" : "bg-orange-100 text-orange-800"}`}
+			>
+				{row.loyalty_tier || "Bronze"}
+			</span>
+		),
+	},
+	{
+		key: "loyalty_points",
+		header: "Points",
+		sortable: true,
+		headerClassName: "text-right",
+		className: "text-right font-medium",
+		render: (row) => row.loyalty_points?.toString() || "0",
+	},
+	{
+		key: "store_credit",
+		header: "Credit",
+		sortable: true,
+		headerClassName: "text-right",
+		className: "text-right font-medium",
+		render: (row) => `₹${row.store_credit || "0.00"}`,
+	},
+	{
+		key: "status",
+		header: tc("status"),
+		sortable: true,
+		render: (row) => (
+			<span
+				className={
+					row.status === "active" ? "text-green-600" : "text-muted-foreground"
+				}
+			>
+				{row.status === "active" ? tc("active") : tc("inactive")}
+			</span>
+		),
+	},
+];
 
 	const exportColumns: ExportColumn<Customer>[] = [
 		{
@@ -142,6 +144,8 @@ export default function CustomersPage() {
 		{ key: "name", header: tc("name"), getValue: (c) => c.name },
 		{ key: "email", header: tc("email"), getValue: (c) => c.email },
 		{ key: "phone", header: tc("phone"), getValue: (c) => c.phone ?? "" },
+		{ key: "village", header: "Village", getValue: (c) => c.village ?? "" },
+		{ key: "address", header: tc("address"), getValue: (c) => c.address ?? "" },
 		{
 			key: "loyalty_tier",
 			header: "Tier",
@@ -213,6 +217,7 @@ export default function CustomersPage() {
 			email: "",
 			phone: "",
 			address: "",
+			village: "",
 			status: "active" as "active" | "inactive",
 		},
 		validators: {
@@ -224,6 +229,7 @@ export default function CustomersPage() {
 				email: value.email,
 				phone: value.phone || undefined,
 				address: value.address || undefined,
+				village: value.village || undefined,
 				status: value.status,
 			};
 			if (isEditing) {
@@ -259,6 +265,7 @@ export default function CustomersPage() {
 		form.setFieldValue("email", c.email);
 		form.setFieldValue("phone", c.phone ?? "");
 		form.setFieldValue("address", c.address ?? "");
+		form.setFieldValue("village", c.village ?? "");
 		form.setFieldValue(
 			"status",
 			(c.status ?? "active") as "active" | "inactive",
@@ -462,32 +469,45 @@ export default function CustomersPage() {
 										</div>
 									)}
 								</form.Field>
-								<form.Field name="status">
-									{(field) => (
-										<div className="flex flex-col gap-2 sm:grid sm:grid-cols-4 sm:items-center sm:gap-4">
-											<Label htmlFor="status">{tc("status")}</Label>
-											<Select
-												value={field.state.value}
-												onValueChange={(value) =>
-													field.handleChange(value as "active" | "inactive")
-												}
-											>
-												<SelectTrigger
-													id="status"
-													className="col-span-3 text-xs sm:text-sm"
-												>
-													<SelectValue placeholder={t("selectStatus")} />
-												</SelectTrigger>
-												<SelectContent>
-													<SelectItem value="active">{tc("active")}</SelectItem>
-													<SelectItem value="inactive">
-														{tc("inactive")}
-													</SelectItem>
-												</SelectContent>
-											</Select>
-										</div>
-									)}
-								</form.Field>
+<form.Field name="village">
+	{(field) => (
+		<div className="flex flex-col gap-2 sm:grid sm:grid-cols-4 sm:items-center sm:gap-4">
+			<Label htmlFor="village">Village</Label>
+			<Input
+				id="village"
+				value={field.state.value}
+				onChange={(e) => field.handleChange(e.target.value)}
+				className="col-span-3 text-xs sm:text-sm"
+			/>
+		</div>
+	)}
+</form.Field>
+<form.Field name="status">
+	{(field) => (
+		<div className="flex flex-col gap-2 sm:grid sm:grid-cols-4 sm:items-center sm:gap-4">
+			<Label htmlFor="status">{tc("status")}</Label>
+			<Select
+				value={field.state.value}
+				onValueChange={(value) =>
+					field.handleChange(value as "active" | "inactive")
+				}
+			>
+				<SelectTrigger
+					id="status"
+					className="col-span-3 text-xs sm:text-sm"
+				>
+					<SelectValue placeholder={t("selectStatus")} />
+				</SelectTrigger>
+				<SelectContent>
+					<SelectItem value="active">{tc("active")}</SelectItem>
+					<SelectItem value="inactive">
+						{tc("inactive")}
+					</SelectItem>
+				</SelectContent>
+			</Select>
+		</div>
+	)}
+</form.Field>
 							</div>
 							<DialogFooter>
 								<Button

@@ -109,6 +109,7 @@ export const customers = pgTable("customers", {
 	email: varchar("email", { length: 255 }).unique(),
 	phone: varchar("phone", { length: 20 }),
 	address: text("address"),
+	village: varchar("village", { length: 100 }),
 	latitude: varchar("latitude", { length: 50 }),
 	longitude: varchar("longitude", { length: 50 }),
 	user_uid: varchar("user_uid", { length: 255 }).notNull(),

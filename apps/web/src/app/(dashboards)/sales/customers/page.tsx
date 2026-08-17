@@ -140,6 +140,7 @@ export default function CustomersPage() {
 		{ key: "name", header: tc("name"), getValue: (c) => c.name },
 		{ key: "email", header: tc("email"), getValue: (c) => c.email },
 		{ key: "phone", header: tc("phone"), getValue: (c) => c.phone ?? "" },
+		{ key: "village", header: "Village", getValue: (c) => c.village ?? "" },
 		{
 			key: "loyalty_tier",
 			header: "Tier",

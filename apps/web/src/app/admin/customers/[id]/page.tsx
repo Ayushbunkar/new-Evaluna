@@ -375,6 +375,19 @@ export default function CustomerIntelligencePage() {
 								</p>
 							</div>
 						</div>
+						{customer.village && (
+							<div className="flex items-start gap-3">
+								<MapPin className="mt-1 h-4 w-4 text-primary" />
+								<div>
+									<p className="font-medium text-sm leading-none">
+										Village Location
+									</p>
+									<p className="mt-1 text-muted-foreground text-sm">
+										{customer.village}
+									</p>
+								</div>
+							</div>
+						)}
 						{customer.gst_number && (
 							<div className="flex items-start gap-3">
 								<ShieldCheck className="mt-1 h-4 w-4 text-primary" />
