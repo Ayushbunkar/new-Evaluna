@@ -1,0 +1,6 @@
+[install]
+# Disable catalog mode to use regular dependencies
+catalog = false
+
+[install.scopes]
+# Define the catalog scopes if needed

@@ -12,16 +12,14 @@
 		}
 	},
 	"scripts": {
-		"check-types": "tsc --noEmit",
-		"db:push": "bunx drizzle-kit push --force"
+		"check-types": "tsc --noEmit"
 	},
 	"dependencies": {
-		"drizzle-orm": "^0.45.2"
+		"drizzle-orm": "^0.45.2",
+		"pg": "^8.22.0"
 	},
 	"devDependencies": {
-		"@electric-sql/pglite": "^0.5.4",
 		"@evaluna/config": "workspace:*",
-		"@types/pg": "^8.11.6",
 		"drizzle-kit": "^0.31.10",
 		"typescript": "^5"
 	}

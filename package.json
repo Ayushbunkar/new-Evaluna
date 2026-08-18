@@ -1,0 +1,40 @@
+{
+  "name": "evaluna-erp",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev --parallel",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "check-types": "turbo run check-types",
+    "db:push": "turbo run db:push",
+    "db:generate": "turbo run db:generate",
+    "db:migrate": "turbo run db:migrate",
+    "db:studio": "turbo run db:studio",
+    "install": "bun install",
+    "prepare": "bun install"
+  },
+  "dependencies": {
+    "@evaluna/env": "workspace:*",
+    "@tanstack/zod-form-adapter": "^0.42.1",
+    "dotenv": "^17.2.2",
+    "drizzle-orm": "^0.45.2",
+    "pg": "^8.22.0",
+    "playwright": "^1.61.1",
+    "react-to-print": "^3.3.0",
+    "turbo": "^2.10.10"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.4",
+    "@evaluna/config": "workspace:*",
+    "@faker-js/faker": "^10.5.0",
+    "@types/node": "^26.1.1",
+    "drizzle-kit": "^0.31.10",
+    "typescript": "^5"
+  }
+}

@@ -1,5 +1,25 @@
 {
 	"name": "@evaluna/config",
 	"version": "0.0.0",
-	"private": true
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": {
+			"default": "./src/index.ts"
+		},
+		"./*": {
+			"default": "./src/*.ts"
+		}
+	},
+	"scripts": {
+		"check-types": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@tanstack/zod-form-adapter": "^0.42.1",
+		"dotenv": "^17.2.2",
+		"zod": "^3.23.8"
+	},
+	"devDependencies": {
+		"typescript": "^5"
+	}
 }
