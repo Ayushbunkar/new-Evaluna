@@ -1,14 +1,13 @@
-import { db } from "./src/index";
-import { customers } from "./src/schema";
-import { branches } from "./src/schema";
-import { staff } from "./src/schema";
+import { db } from "./packages/db/src/index";
+import { customers, branches, staff } from "./packages/db/src/schema";
+import { eq } from "drizzle-orm";
 import { readFileSync } from "fs";
 
 async function main() {
-  console.log("Starting customer import using direct database connection...");
+  console.log("Starting customer import using existing db connection...");
 
   // Read CSV file
-  const fileContent = readFileSync("./../../Contacts.csv", "utf8");
+  const fileContent = readFileSync("./Contacts.csv", "utf8");
   const lines = fileContent.trim().split("\n");
 
   // Get or create the main branch
