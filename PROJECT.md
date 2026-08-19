@@ -1,6 +1,6 @@
 # Project: Evaluna ERP Performance Optimization
 
-## Architecture
+## Architecturefd
 Next.js 16.1.6 (App Router) + React 19 + Tailwind CSS v4 + TRPC 11 + Drizzle ORM + PostgreSQL in a Turborepo monorepo.
 Role dashboards: Admin, Sales, Auditor, HR, Picker, Putter, Driver, Marketing.
 
