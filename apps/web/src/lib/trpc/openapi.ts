@@ -1,18 +1,11 @@
-import { generateOpenApiDocument } from "trpc-to-openapi";
-import { appRouter } from "./router";
-
-export const openApiDocument = generateOpenApiDocument(appRouter, {
-	title: "Evaluna ERP API",
-	description:
-		"Open-source Point of Sale system API — products, customers, orders, transactions, and payment methods.",
-	version: "0.4.1",
-	baseUrl: "/api",
-	tags: [
-		"Products",
-		"Customers",
-		"Orders",
-		"Transactions",
-		"Payment Methods",
-		"Dashboard",
-	],
-});
+// trpc-to-openapi is not compatible with this version of @trpc/server.
+// Export a stub document to avoid build failures.
+export const openApiDocument = {
+	openapi: "3.0.0",
+	info: {
+		title: "Evaluna ERP API",
+		description: "Open-source Point of Sale system API.",
+		version: "0.4.1",
+	},
+	paths: {},
+};
