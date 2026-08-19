@@ -41,7 +41,6 @@ const nextConfig = {
 	env: {
 		NEXT_PUBLIC_BASE_PATH: process.env.BASE_PATH || "",
 	},
-	serverExternalPackages: ["@electric-sql/pglite", "postgres"],
 	experimental: {
 		optimizePackageImports: [
 			"lucide-react",
