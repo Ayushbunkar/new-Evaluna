@@ -10,8 +10,10 @@ import {
 	Mail,
 	MessageCircle,
 	Printer,
+	Receipt,
 	RotateCcw,
 	ShoppingBag,
+	Store,
 	X,
 	XCircle,
 } from "lucide-react";
@@ -59,6 +61,45 @@ const PAYMENT_METHOD_LABELS: Record<number, string> = {
 	3: "UPI",
 	4: "Store Credit",
 };
+
+function numberToWords(num: number): string {
+	const a = [
+		"", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten",
+		"Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"
+	];
+	const b = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+
+	if (num === 0) return "Zero";
+
+	const g = (n: number): string => {
+		if (n < 20) return a[n];
+		const digit = n % 10;
+		return b[Math.floor(n / 10)] + (digit ? "-" + a[digit] : "");
+	};
+
+	const h = (n: number): string => {
+		if (n >= 100) {
+			return a[Math.floor(n / 100)] + " Hundred" + (n % 100 ? " and " + g(n % 100) : "");
+		}
+		return g(n);
+	};
+
+	let str = "";
+	let temp = Math.floor(num);
+	
+	if (temp >= 100000) {
+		str += h(Math.floor(temp / 100000)) + " Lakh ";
+		temp %= 100000;
+	}
+	if (temp >= 1000) {
+		str += h(Math.floor(temp / 1000)) + " Thousand ";
+		temp %= 1000;
+	}
+	if (temp > 0) {
+		str += h(temp);
+	}
+	return str.trim() + " Rupees Only";
+}
 
 const getPaymentStatusBadge = (order: CompletedOrder) => {
 	const paid = order.payments.reduce(
@@ -444,358 +485,464 @@ export function SaleCompletionScreen({
 				exit={{ opacity: 0 }}
 				className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
 			>
+				{/* Global style overrides for printing */}
+				<style dangerouslySetInnerHTML={{ __html: `
+					@media print {
+						body {
+							background: #ffffff !important;
+							overflow: visible !important;
+						}
+						.print\\:hidden {
+							display: none !important;
+						}
+						#printable-receipt {
+							display: block !important;
+							position: absolute !important;
+							left: 0 !important;
+							top: 0 !important;
+							margin: 0 !important;
+							padding: 0 !important;
+							border: none !important;
+							box-shadow: none !important;
+							width: ${pageSize === "A4" ? "210mm" : "80mm"} !important;
+						}
+						* {
+							-webkit-print-color-adjust: exact !important;
+							print-color-adjust: exact !important;
+						}
+						tr, .summary-block, .footer-block {
+							page-break-inside: avoid;
+						}
+						@page {
+							margin: 5mm;
+							size: ${pageSize === "A4" ? "A4 portrait" : "80mm auto"};
+						}
+					}
+				`}} />
+
 				<motion.div
 					initial={{ scale: 0.92, opacity: 0, y: 20 }}
 					animate={{ scale: 1, opacity: 1, y: 0 }}
 					exit={{ scale: 0.92, opacity: 0 }}
 					transition={{ type: "spring", damping: 22, stiffness: 300 }}
-					className="flex max-h-[95vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+					className="flex max-h-[95vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
 				>
-					{/* ── Header ── */}
-					<div className="flex shrink-0 items-center justify-between bg-gradient-to-r from-green-600 to-emerald-500 px-6 py-4 text-white">
+					{/* ── Screen Control Bar (Hidden on Print) ── */}
+					<div className="flex shrink-0 items-center justify-between bg-blue-900 px-6 py-4 text-white print:hidden">
 						<div className="flex items-center gap-3">
-							<div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20">
-								<CheckCircle2 className="h-6 w-6" />
+							<div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-800 text-white shadow-inner">
+								<Receipt className="h-5 w-5 text-blue-200" />
 							</div>
 							<div>
-								<div className="font-bold text-lg leading-tight">
-									Sale Completed
+								<div className="font-black text-base tracking-tight leading-none">
+									Billing Checkout
 								</div>
-								<div className="text-green-100 text-sm">
-									Invoice #{order.id} generated successfully
+								<div className="text-blue-300 text-xs mt-1">
+									Invoice #{order.id} generated
 								</div>
 							</div>
 						</div>
-		
+
+						{/* Format Selector Tabs */}
+						<div className="flex rounded-lg bg-blue-950/80 p-0.5 border border-blue-800">
+							<button
+								type="button"
+								onClick={() => setPageSize("A4")}
+								className={`rounded-md px-4 py-1.5 text-xs font-bold transition-all cursor-pointer ${
+									pageSize === "A4"
+										? "bg-blue-800 text-white shadow-sm"
+										: "text-blue-300 hover:text-white"
+								}`}
+							>
+								A4 Sheet
+							</button>
+							<button
+								type="button"
+								onClick={() => setPageSize("80mm")}
+								className={`rounded-md px-4 py-1.5 text-xs font-bold transition-all cursor-pointer ${
+									pageSize === "80mm"
+										? "bg-blue-800 text-white shadow-sm"
+										: "text-blue-300 hover:text-white"
+								}`}
+							>
+								80mm Thermal
+							</button>
+						</div>
+
+						{/* Top Actions */}
+						<div className="flex items-center gap-2">
+							<Button
+								variant="ghost"
+								size="sm"
+								className="text-white hover:bg-blue-800 gap-1.5"
+								onClick={handlePrint}
+							>
+								<Printer className="h-4 w-4" />
+								Print
+							</Button>
+							<Button
+								variant="ghost"
+								size="sm"
+								className="text-white hover:bg-blue-800 gap-1.5"
+								onClick={handleDownloadPDF}
+							>
+								<Download className="h-4 w-4" />
+								PDF
+							</Button>
+							<Button
+								variant="ghost"
+								size="icon"
+								className="h-8 w-8 text-blue-200 hover:text-white hover:bg-blue-800"
+								onClick={onNewSale}
+							>
+								<X className="h-5 w-5" />
+							</Button>
+						</div>
 					</div>
 
 					<div className="flex min-h-0 flex-1 overflow-hidden">
-						{/* ── Left: Receipt Preview ── */}
-						<div className="flex min-h-0 flex-1 flex-col border-r bg-gray-100/50">
-							{/* Size selector at the top of preview */}
-							<div className="flex justify-between items-center border-b bg-white px-6 py-2.5 shrink-0 relative z-20">
-								<span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-									Template Preview
-								</span>
-								<div className="flex rounded-md bg-muted p-0.5 relative z-25 pointer-events-auto">
-									<button
-										type="button"
-										onClick={() => setPageSize("80mm")}
-										className={`rounded px-2.5 py-1 text-xs font-medium transition-all cursor-pointer relative z-30 pointer-events-auto ${
-											pageSize === "80mm"
-												? "bg-white text-foreground shadow-sm font-semibold"
-												: "text-muted-foreground hover:text-foreground"
-										}`}
-									>
-										80mm Thermal
-									</button>
-									<button
-										type="button"
-										onClick={() => setPageSize("A4")}
-										className={`rounded px-2.5 py-1 text-xs font-medium transition-all cursor-pointer relative z-30 pointer-events-auto ${
+						{/* ── Center-Aligned Interactive Preview Canvas ── */}
+						<div className="flex min-h-0 flex-1 flex-col bg-slate-100 overflow-auto p-6 print:p-0 print:bg-white justify-start items-center">
+							<ScrollArea className="w-full flex-1">
+								<div className="flex min-h-full items-center justify-center p-4 print:p-0">
+									<motion.div
+										id="printable-receipt"
+										ref={receiptRef}
+										layout
+										animate={{
+											width: pageSize === "A4" ? "210mm" : "80mm",
+										}}
+										transition={{ type: "spring", stiffness: 300, damping: 30 }}
+										className={`paper-sheet bg-white shadow-xl border border-slate-200 print:shadow-none print:border-none mx-auto ${
 											pageSize === "A4"
-												? "bg-white text-foreground shadow-sm font-semibold"
-												: "text-muted-foreground hover:text-foreground"
+												? "p-[20mm] text-sm text-slate-800"
+												: "p-4 font-mono text-[11px] leading-tight text-black"
 										}`}
+										style={{ color: "#000" }}
 									>
-										A4 Page
-									</button>
-								</div>
-							</div>
-
-							<ScrollArea className="flex-1 p-6">
-								<div
-									ref={receiptRef}
-									id="printable-receipt"
-									className={`mx-auto bg-white border shadow-sm transition-all duration-200 ${
-										pageSize === "80mm"
-											? "w-[302px] max-w-full p-4 text-[11px] leading-relaxed"
-											: "w-full max-w-[700px] p-12 text-sm"
-									}`}
-									style={{ color: "#000" }}
-								>
-									{/* Store Header */}
-									<div className="mb-4 text-center">
-										<h2 className="font-bold text-xl tracking-wide">
-											{STORE.name}
-										</h2>
-										<p className="text-gray-500 mt-0.5">{STORE.address}</p>
-										<p className="text-gray-500">{STORE.city}</p>
-										<p className="text-gray-500">📞 {STORE.phone}</p>
-									</div>
-
-									<hr className="my-3 border-t border-dashed border-gray-400" />
-
-									{/* Invoice Meta */}
-									<div className="mb-4 grid grid-cols-2 gap-x-4 gap-y-1">
-										<div className="text-gray-500">Invoice No.</div>
-										<div className="text-right font-semibold">
-											#{order.id}
-										</div>
-										<div className="text-gray-500">Date &amp; Time</div>
-										<div className="text-right">
-											{formattedDate}
-										</div>
-										<div className="text-gray-500">Cashier</div>
-										<div className="text-right">
-											{order.cashierName || "Counter 1"}
-										</div>
-										{order.couponCode && (
-											<>
-												<div className="text-gray-500">Coupon</div>
-												<div className="text-right font-medium text-green-600">
-													{order.couponCode}
+										{pageSize === "A4" ? (
+											<div className="w-full text-left">
+												{/* Top Accent Bar */}
+												<div className="h-2 w-full bg-blue-800 -mt-[20mm] -mx-[20mm] mb-8" style={{ width: "calc(100% + 40mm)" }} />
+												
+												{/* Header */}
+												<div className="flex justify-between items-start mb-6">
+													<div className="flex items-center gap-3">
+														<div className="h-12 w-12 bg-blue-800 rounded-lg flex items-center justify-center text-white shrink-0">
+															<Store className="h-7 w-7" />
+														</div>
+														<div>
+															<h1 className="text-2xl font-black text-blue-900 tracking-tight">{STORE.name}</h1>
+															<p className="text-slate-500 text-xs mt-0.5">{STORE.address}</p>
+															<p className="text-slate-500 text-xs">{STORE.city}</p>
+														</div>
+													</div>
+													<div className="text-right">
+														<div className="text-[10px] font-bold text-blue-800 tracking-widest uppercase mb-1">Bill Invoice</div>
+														<h2 className="text-xl font-black text-slate-900">#{order.id}</h2>
+														<p className="text-slate-500 text-xs mt-1">{formattedDate}</p>
+														<p className="text-slate-400 text-[10px] mt-0.5">Cashier: {order.cashierName || "Counter 1"}</p>
+													</div>
 												</div>
-											</>
-										)}
-									</div>
 
-									{/* Customer Details */}
-									{(order.customerName || order.customerPhone || order.shopName) && (
-										<>
-											<hr className="my-3 border-t border-dashed border-gray-400" />
-											<div className="mb-3">
-												<div className="mb-1.5 text-gray-400 text-xs font-semibold uppercase tracking-wide">
-													Bill To
+												{/* Meta & Status Card */}
+												<div className="grid grid-cols-3 gap-4 mb-6">
+													<div className="col-span-2 bg-blue-50/50 border border-blue-100 rounded-xl p-4">
+														<div className="text-xs font-bold text-blue-900 uppercase tracking-wider mb-2">Customer Details</div>
+														{order.customerName || order.customerPhone || order.shopName ? (
+															<div className="space-y-1 text-xs text-slate-700">
+																{order.customerName && <div className="font-semibold text-slate-900">{order.customerName}</div>}
+																{order.shopName && <div><span className="text-slate-400">Shop:</span> {order.shopName}</div>}
+																{order.customerPhone && <div><span className="text-slate-400">Phone:</span> {order.customerPhone}</div>}
+																{order.address && <div><span className="text-slate-400">Address:</span> {order.address}</div>}
+															</div>
+														) : (
+															<div className="text-xs text-slate-400 italic">Walk-in Customer</div>
+														)}
+													</div>
+													<div className="bg-blue-50/50 border border-blue-100 rounded-xl p-4 flex flex-col justify-between items-end">
+														<span className="text-xs font-bold text-blue-900 uppercase tracking-wider">Payment Status</span>
+														<span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold border ${
+															status.label === "PAID" 
+																? "bg-green-50 text-green-700 border-green-200" 
+																: status.label === "PARTIAL"
+																	? "bg-yellow-50 text-yellow-700 border-yellow-200"
+																	: "bg-red-50 text-red-700 border-red-200"
+														}`}>
+															{status.label}
+														</span>
+													</div>
 												</div>
-												<div className="grid grid-cols-2 gap-x-4 gap-y-1">
-													{order.customerName && (
-														<>
-															<div className="text-gray-500">Name</div>
-															<div className="text-right font-medium">{order.customerName}</div>
-														</>
-													)}
-													{order.shopName && (
-														<>
-															<div className="text-gray-500">Shop</div>
-															<div className="text-right font-medium">{order.shopName}</div>
-														</>
-													)}
-													{order.customerPhone && (
-														<>
-															<div className="text-gray-500">Phone</div>
-															<div className="text-right">{order.customerPhone}</div>
-														</>
-													)}
-													{order.address && (
-														<>
-															<div className="text-gray-500">Address</div>
-															<div className="text-right">{order.address}</div>
-														</>
-													)}
+
+												{/* Itemized Table */}
+												<div className="border border-slate-200 rounded-xl overflow-hidden mb-6">
+													<table className="w-full text-xs">
+														<thead>
+															<tr className="bg-blue-800 text-white font-semibold text-left">
+																<th className="py-2.5 px-4 w-12 text-center">#</th>
+																<th className="py-2.5 px-4">Item Description</th>
+																<th className="py-2.5 px-4 w-24">SKU</th>
+																<th className="py-2.5 px-4 w-20 text-center">Qty</th>
+																<th className="py-2.5 px-4 w-24 text-right">Unit Price</th>
+																<th className="py-2.5 px-4 w-20 text-right">Discount</th>
+																<th className="py-2.5 px-4 w-28 text-right">Total</th>
+															</tr>
+														</thead>
+														<tbody className="divide-y divide-slate-100">
+															{order.items.map((item, idx) => {
+																const rate = Number.parseFloat(item.price);
+																const lineTotal = rate * item.qty;
+																return (
+																	<tr key={idx} className="even:bg-slate-50/50 hover:bg-slate-50/30 transition-colors">
+																		<td className="py-2.5 px-4 text-center text-slate-400 font-medium">{idx + 1}</td>
+																		<td className="py-2.5 px-4 font-medium text-slate-800">{item.name}</td>
+																		<td className="py-2.5 px-4 text-slate-500 font-mono text-[10px]">SKU-{item.id}</td>
+																		<td className="py-2.5 px-4 text-center font-semibold text-slate-700">
+																			{Number.isInteger(item.qty) ? item.qty : item.qty.toFixed(3)}
+																		</td>
+																		<td className="py-2.5 px-4 text-right text-slate-600">₹{rate.toFixed(2)}</td>
+																		<td className="py-2.5 px-4 text-right text-green-600">-</td>
+																		<td className="py-2.5 px-4 text-right font-semibold text-slate-900">₹{lineTotal.toFixed(2)}</td>
+																	</tr>
+																);
+															})}
+														</tbody>
+													</table>
+												</div>
+
+												{/* Summary Grid */}
+												<div className="grid grid-cols-12 gap-6 mb-8 items-start">
+													<div className="col-span-7 bg-slate-50 border border-slate-100 rounded-xl p-4">
+														<div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Amount in Words</div>
+														<div className="text-xs font-semibold text-slate-700 capitalize leading-relaxed">
+															{numberToWords(grandTotal)}
+														</div>
+													</div>
+													<div className="col-span-5 space-y-2 text-xs">
+														<div className="flex justify-between text-slate-500">
+															<span>Subtotal</span>
+															<span>₹{order.subtotal.toFixed(2)}</span>
+														</div>
+														{order.discount > 0 && (
+															<div className="flex justify-between text-green-600 font-medium">
+																<span>Discount {order.couponCode ? `(${order.couponCode})` : ""}</span>
+																<span>− ₹{order.discount.toFixed(2)}</span>
+															</div>
+														)}
+														{roundOff !== 0 && (
+															<div className="flex justify-between text-slate-500">
+																<span>Round-off</span>
+																<span>{roundOff > 0 ? "+" : ""}₹{roundOff.toFixed(2)}</span>
+															</div>
+														)}
+														<div className="h-px bg-slate-200 my-2" />
+														<div className="flex justify-between font-black text-blue-900 text-sm">
+															<span>Grand Total</span>
+															<span>₹{grandTotal.toFixed(2)}</span>
+														</div>
+													</div>
+												</div>
+
+												{/* Footer */}
+												<div className="border-t border-slate-200 pt-6 mt-12 grid grid-cols-2 gap-8 items-end">
+													<div className="space-y-1.5 text-[10px] text-slate-400">
+														<div className="font-bold text-slate-500 uppercase tracking-wide">Terms & Conditions</div>
+														<p>• Goods once sold will not be taken back without valid receipt within 7 days.</p>
+														<p>• This is a computer generated invoice and requires no physical signature.</p>
+													</div>
+													<div className="text-right space-y-6">
+														<div className="inline-block border-b border-slate-300 w-48 text-center pb-1 text-slate-500 text-xs font-medium italic">
+															Authorized Signatory
+														</div>
+													</div>
 												</div>
 											</div>
-										</>
-									)}
+										) : (
+											<div className="w-full text-center font-mono text-[11px] leading-tight text-black max-w-[302px] mx-auto">
+												{/* Centered Header */}
+												<div className="space-y-1 mb-2">
+													<h2 className="font-bold text-xs tracking-wide uppercase">{STORE.name}</h2>
+													<p className="text-[10px]">{STORE.address}</p>
+													<p className="text-[10px]">{STORE.city}</p>
+													<p className="text-[10px]">PHONE: {STORE.phone}</p>
+												</div>
 
-									<hr className="my-3 border-t border-dashed border-gray-400" />
+												<div className="border-t border-dashed border-slate-900 my-2" />
 
-									{/* Item Table */}
-									<table className="mb-2 w-full">
-										<colgroup>
-											<col style={{ width: "44%" }} />
-											<col style={{ width: "12%" }} />
-											<col style={{ width: "22%" }} />
-											<col style={{ width: "22%" }} />
-										</colgroup>
-										<thead>
-											<tr className="border-b border-dashed border-gray-400 text-gray-400 text-xs uppercase tracking-wide">
-												<th className="py-2 text-left font-semibold">Item</th>
-												<th className="py-2 text-center font-semibold">Qty</th>
-												<th className="py-2 text-right font-semibold">Rate</th>
-												<th className="py-2 text-right font-semibold">Total</th>
-											</tr>
-										</thead>
-										<tbody>
-											{order.items.map((item, idx) => {
-												const rate = Number.parseFloat(item.price);
-												const lineTotal = rate * item.qty;
-												return (
-													<tr
-														key={item.id ?? idx}
-														className="border-b border-gray-100 last:border-0"
-													>
-														<td
-															className="py-2 pr-2 leading-snug"
-															style={{
-																wordBreak: "break-word",
-																overflowWrap: "anywhere",
-															}}
-														>
-															{item.name}
-														</td>
-														<td className="py-2 text-center align-top text-gray-600">
-															{Number.isInteger(item.qty)
-																? item.qty
-																: item.qty.toFixed(3)}
-														</td>
-														<td className="py-2 text-right align-top text-gray-600">
-															₹{rate.toFixed(2)}
-														</td>
-														<td className="py-2 text-right align-top font-medium">
-															₹{lineTotal.toFixed(2)}
-														</td>
-													</tr>
-												);
-											})}
-										</tbody>
-									</table>
+												{/* Meta Info */}
+												<div className="text-left space-y-0.5">
+													<div>INVOICE: #{order.id}</div>
+													<div>DATE: {formattedDate}</div>
+													<div>CASHIER: {order.cashierName || "Counter 1"}</div>
+													<div className="font-bold">STATUS: {status.label}</div>
+												</div>
 
-									<hr className="my-3 border-t border-dashed border-gray-400" />
+												{order.customerName && (
+													<>
+														<div className="border-t border-dashed border-slate-900 my-2" />
+														<div className="text-left space-y-0.5">
+															<div className="font-bold">BILL TO:</div>
+															<div>NAME: {order.customerName}</div>
+															{order.shopName && <div>SHOP: {order.shopName}</div>}
+															{order.customerPhone && <div>PHONE: {order.customerPhone}</div>}
+														</div>
+													</>
+												)}
 
-									{/* Summary */}
-									<div className="space-y-1.5">
-										<div className="flex justify-between text-gray-600">
-											<span>Subtotal</span>
-											<span>₹{order.subtotal.toFixed(2)}</span>
-										</div>
-										{order.discount > 0 && (
-											<div className="flex justify-between text-green-600">
-												<span>
-													Discount{" "}
-													{order.couponCode ? `(${order.couponCode})` : ""}
-												</span>
-												<span>− ₹{order.discount.toFixed(2)}</span>
+												<div className="border-t border-dashed border-slate-900 my-2" />
+
+												{/* 3-Column Table */}
+												<table className="w-full text-[11px] text-left">
+													<thead>
+														<tr className="border-b border-dashed border-slate-900 font-bold">
+															<th className="py-1">ITEM</th>
+															<th className="py-1 text-center w-12">QTY</th>
+															<th className="py-1 text-right w-16">TOTAL</th>
+														</tr>
+													</thead>
+													<tbody>
+														{order.items.map((item, idx) => {
+															const rate = Number.parseFloat(item.price);
+															const lineTotal = rate * item.qty;
+															return (
+																<tr key={idx} className="align-top">
+																	<td className="py-1">
+																		<div className="font-bold">{item.name}</div>
+																		<div className="text-[10px] text-slate-600 pl-1">
+																			{Number.isInteger(item.qty) ? item.qty : item.qty.toFixed(3)} x Rs.{rate.toFixed(2)}
+																		</div>
+																	</td>
+																	<td className="py-1 text-center">
+																		{Number.isInteger(item.qty) ? item.qty : item.qty.toFixed(3)}
+																	</td>
+																	<td className="py-1 text-right">
+																		Rs.{lineTotal.toFixed(2)}
+																	</td>
+																</tr>
+															);
+														})}
+													</tbody>
+												</table>
+
+												<div className="border-t border-dashed border-slate-900 my-2" />
+
+												{/* Summary */}
+												<div className="space-y-1 text-left">
+													<div className="flex justify-between">
+														<span>SUBTOTAL:</span>
+														<span>Rs.{order.subtotal.toFixed(2)}</span>
+													</div>
+													{order.discount > 0 && (
+														<div className="flex justify-between">
+															<span>DISCOUNT:</span>
+															<span>-Rs.{order.discount.toFixed(2)}</span>
+														</div>
+													)}
+													{roundOff !== 0 && (
+														<div className="flex justify-between">
+															<span>ROUND-OFF:</span>
+															<span>{roundOff > 0 ? "+" : ""}Rs.{roundOff.toFixed(2)}</span>
+														</div>
+													)}
+													<div className="border-t border-dashed border-slate-900 my-1" />
+													<div className="flex justify-between font-bold text-[11px]">
+														<span>GRAND TOTAL:</span>
+														<span>Rs.{grandTotal.toFixed(2)}</span>
+													</div>
+												</div>
+
+												<div className="border-t border-dashed border-slate-900 my-2" />
+
+												{/* Footer */}
+												<div className="space-y-0.5">
+													<p className="font-bold">THANK YOU FOR YOUR VISIT!</p>
+													<p>Goods once sold will not be taken back</p>
+													<p>without valid receipt within 7 days.</p>
+												</div>
 											</div>
 										)}
-										{roundOff !== 0 && (
-											<div className="flex justify-between text-gray-500">
-												<span>Round-off</span>
-												<span>
-													{roundOff > 0 ? "+" : ""}₹{roundOff.toFixed(2)}
-												</span>
-											</div>
-										)}
-										<hr className="my-2 border-gray-200" />
-										<div className="flex justify-between font-bold text-base">
-											<span>Grand Total</span>
-											<span>₹{grandTotal.toFixed(2)}</span>
-										</div>
-									</div>
-
-									<hr className="my-3 border-t border-dashed border-gray-400" />
-
-									{/* Payment */}
-									<div className="space-y-1.5">
-										<div className="mb-2 font-medium text-gray-400 text-xs uppercase tracking-wide">
-											Payment Details
-										</div>
-										{order.payments.map((p, i) => (
-											<div key={i} className="flex justify-between text-gray-700">
-												<span>
-													{PAYMENT_METHOD_LABELS[p.methodId] ?? "Payment"}
-												</span>
-												<span>₹{Number.parseFloat(p.amount).toFixed(2)}</span>
-											</div>
-										))}
-										{change > 0 && (
-											<div className="flex justify-between font-medium text-blue-600">
-												<span>Change Returned</span>
-												<span>₹{change.toFixed(2)}</span>
-											</div>
-										)}
-										{balanceDue > 0 && (
-											<div className="flex justify-between font-semibold text-red-600">
-												<span>Balance Due</span>
-												<span>₹{balanceDue.toFixed(2)}</span>
-											</div>
-										)}
-									</div>
-
-									<hr className="my-4 border-t border-dashed border-gray-400" />
-
-									<div className="space-y-1 text-center text-gray-400 text-xs">
-										<p className="font-semibold text-gray-600">
-											Thank you for shopping!
-										</p>
-										<p>Goods once sold will not be taken back</p>
-										<p>without valid receipt within 7 days</p>
-										<p className="mt-2 font-semibold text-gray-500">
-											{STORE.name}
-										</p>
-										<p>{STORE.phone}</p>
-									</div>
+									</motion.div>
 								</div>
 							</ScrollArea>
 						</div>
 
-						{/* ── Right: Actions Panel ── */}
-						<div className="flex w-64 shrink-0 flex-col gap-3 bg-gray-50/80 p-4">
-							<div className="mb-1 font-semibold text-gray-400 text-xs uppercase tracking-wide">
+						{/* ── Right Actions Panel ── */}
+						<div className="flex w-64 shrink-0 flex-col gap-3 bg-slate-50 p-4 border-l border-slate-200 print:hidden overflow-y-auto">
+							<div className="mb-1 font-bold text-slate-400 text-xs uppercase tracking-wider">
 								Actions
 							</div>
 
 							<Button
 								size="lg"
-								className="h-12 w-full bg-green-600 font-bold text-base text-white shadow-md hover:bg-green-700"
+								className="h-12 w-full bg-blue-800 font-bold text-base text-white shadow-md hover:bg-blue-900"
 								onClick={onNewSale}
 							>
 								<ShoppingBag className="mr-2 h-5 w-5" />
 								New Sale
 							</Button>
 
-							<hr className="my-1 border-gray-200" />
-							<div className="font-medium text-gray-400 text-xs uppercase tracking-wide">
-								Print &amp; Share ({pageSize})
+							<hr className="my-1 border-slate-200" />
+							<div className="font-bold text-slate-400 text-xs uppercase tracking-wider">
+								Print &amp; Share
 							</div>
 
 							<Button
 								variant="outline"
-								className="w-full justify-start gap-2 text-sm"
+								className="w-full justify-start gap-2 border-slate-200 hover:bg-blue-50 text-slate-700 hover:text-blue-900 text-xs font-semibold"
 								onClick={handlePrint}
 							>
-								<Printer className="h-4 w-4 text-gray-500" />
+								<Printer className="h-4 w-4 text-blue-800" />
 								Print Receipt
 							</Button>
 							<Button
 								variant="outline"
-								className="w-full justify-start gap-2 text-sm"
+								className="w-full justify-start gap-2 border-slate-200 hover:bg-blue-50 text-slate-700 hover:text-blue-900 text-xs font-semibold"
 								onClick={handlePrint}
 							>
-								<RotateCcw className="h-4 w-4 text-gray-500" />
+								<RotateCcw className="h-4 w-4 text-blue-800" />
 								Reprint
 							</Button>
 							<Button
 								variant="outline"
-								className="w-full justify-start gap-2 text-sm"
+								className="w-full justify-start gap-2 border-slate-200 hover:bg-blue-50 text-slate-700 hover:text-blue-900 text-xs font-semibold"
 								onClick={handleDownloadPDF}
 							>
-								<Download className="h-4 w-4 text-gray-500" />
+								<Download className="h-4 w-4 text-blue-800" />
 								Download PDF
 							</Button>
 							<Button
 								variant="outline"
-								className="w-full justify-start gap-2 text-sm"
+								className="w-full justify-start gap-2 border-slate-200 hover:bg-blue-50 text-slate-700 hover:text-blue-900 text-xs font-semibold"
 								onClick={handleWhatsApp}
 							>
-								<MessageCircle className="h-4 w-4 text-green-500" />
+								<MessageCircle className="h-4 w-4 text-green-600" />
 								Send WhatsApp
 							</Button>
 							<Button
 								variant="outline"
-								className="w-full justify-start gap-2 text-sm"
+								className="w-full justify-start gap-2 border-slate-200 hover:bg-blue-50 text-slate-700 hover:text-blue-900 text-xs font-semibold"
 								onClick={handleEmail}
 							>
 								<Mail className="h-4 w-4 text-blue-500" />
 								Send Email
 							</Button>
 
-							<hr className="my-1 border-gray-200" />
-							<div className="font-medium text-gray-400 text-xs uppercase tracking-wide">
+							<hr className="my-1 border-slate-200" />
+							<div className="font-bold text-slate-400 text-xs uppercase tracking-wider">
 								Invoice Actions
 							</div>
 
 							<Button
 								variant="outline"
-								className="w-full justify-start gap-2 text-sm"
+								className="w-full justify-start gap-2 border-slate-200 hover:bg-blue-50 text-slate-700 hover:text-blue-900 text-xs font-semibold"
 								onClick={handleDuplicate}
 							>
-								<Copy className="h-4 w-4 text-gray-500" />
+								<Copy className="h-4 w-4 text-slate-500" />
 								Duplicate Invoice
 							</Button>
 							<Button
 								variant="outline"
-								className="w-full justify-start gap-2 text-sm"
+								className="w-full justify-start gap-2 border-slate-200 hover:bg-blue-50 text-slate-700 hover:text-blue-900 text-xs font-semibold"
 								onClick={handleReturn}
 							>
 								<ArrowLeftRight className="h-4 w-4 text-orange-500" />
@@ -803,7 +950,7 @@ export function SaleCompletionScreen({
 							</Button>
 							<Button
 								variant="outline"
-								className="w-full justify-start gap-2 text-sm"
+								className="w-full justify-start gap-2 border-slate-200 hover:bg-blue-50 text-slate-700 hover:text-blue-900 text-xs font-semibold"
 								onClick={handleExchange}
 							>
 								<ArrowLeftRight className="h-4 w-4 text-purple-500" />
@@ -811,7 +958,7 @@ export function SaleCompletionScreen({
 							</Button>
 							<Button
 								variant="outline"
-								className="w-full justify-start gap-2 border-red-200 text-red-600 text-sm hover:bg-red-50 hover:text-red-700"
+								className="w-full justify-start gap-2 border-red-200 text-red-600 text-xs font-semibold hover:bg-red-50 hover:text-red-700"
 								onClick={handleCancel}
 							>
 								<XCircle className="h-4 w-4" />
@@ -820,8 +967,8 @@ export function SaleCompletionScreen({
 						</div>
 					</div>
 
-					{/* ── Footer ── */}
-					<div className="flex shrink-0 items-center justify-between border-t bg-gray-50 px-6 py-3 text-gray-400 text-xs">
+					{/* ── Bottom Info Bar ── */}
+					<div className="flex shrink-0 items-center justify-between border-t border-slate-200 bg-slate-50 px-6 py-3 text-slate-400 text-xs print:hidden">
 						<span>
 							Invoice #{order.id} • {formattedDate}
 						</span>
