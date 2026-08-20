@@ -22,6 +22,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { protectedProcedure, roleProcedure, router } from "../init";
 
+import { publicProcedure } from "../init";
 export const deliveryRouter = router({
 	list: publicProcedure.query(() => []), 
 	// ── Routes ─────────────────────────────────────────────────────────────
@@ -625,3 +626,4 @@ export const deliveryRouter = router({
 			return { success: true, newTotal };
 		}),
 });
+
