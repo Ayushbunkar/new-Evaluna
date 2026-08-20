@@ -11,7 +11,7 @@ import {
 	varchar,
 } from "drizzle-orm/pg-core";
 import { user } from "../auth-schema";
-import { branches, customers, orders, staff } from "../schema";
+import { branches, customers, orders, staff } from "../core";
 
 export const vehicleStatusEnum = pgEnum("vehicle_status", [
 	"available",
