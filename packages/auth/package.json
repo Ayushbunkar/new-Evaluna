@@ -15,8 +15,9 @@
 		"check-types": "tsc --noEmit"
 	},
 	"dependencies": {
-		"better-auth": "^0.1.0",
-		"@evaluna/db": "workspace:*"
+		"@better-auth/drizzle-adapter": "^1.7.1",
+		"@evaluna/db": "workspace:*",
+		"better-auth": "^1.7.1"
 	},
 	"devDependencies": {
 		"@evaluna/config": "workspace:*",

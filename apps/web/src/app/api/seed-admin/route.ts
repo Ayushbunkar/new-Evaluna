@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { user } from "@evaluna/db/schema";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";

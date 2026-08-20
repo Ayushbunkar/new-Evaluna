@@ -2,13 +2,7 @@
 
 import { Button } from "@evaluna/ui/components/button";
 import { motion } from "framer-motion";
-import {
-	ArrowRight,
-	Facebook,
-	Instagram,
-	Linkedin,
-	Twitter,
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 export function Footer() {
@@ -141,25 +135,25 @@ export function Footer() {
 									href="#"
 									className="text-muted-foreground hover:text-foreground"
 								>
-									<Facebook className="h-5 w-5" />
+									<span className="text-sm">Facebook</span>
 								</Link>
 								<Link
 									href="#"
 									className="text-muted-foreground hover:text-foreground"
 								>
-									<Twitter className="h-5 w-5" />
+									<span className="text-sm">Twitter</span>
 								</Link>
 								<Link
 									href="#"
 									className="text-muted-foreground hover:text-foreground"
 								>
-									<Linkedin className="h-5 w-5" />
+									<span className="text-sm">LinkedIn</span>
 								</Link>
 								<Link
 									href="#"
 									className="text-muted-foreground hover:text-foreground"
 								>
-									<Instagram className="h-5 w-5" />
+									<span className="text-sm">Instagram</span>
 								</Link>
 							</div>
 						</div>

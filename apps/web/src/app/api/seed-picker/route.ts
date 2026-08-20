@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import {
 	orders,
 	pickListItems,
@@ -17,20 +19,31 @@ export async function GET(req: Request) {
 		// Ensure we have an order and a user to assign to
 		let orderId = 1;
 		const existingOrders = await db.select().from(orders).limit(1);
-		if (existingOrders.length > 0) orderId = existingOrders[0].id;
-		else {
+		if (existingOrders.length > 0) {
+			if (existingOrders[0] && existingOrders[0].id) {
+				orderId = existingOrders[0].id;
+			}
+		} else {
 			const [newOrder] = await db
 				.insert(orders)
 				.values({ customer_id: 1, total_amount: "500", user_uid: userUid })
 				.returning();
-			orderId = newOrder.id;
+			if (newOrder && newOrder.id) {
+				orderId = newOrder.id;
+			} else {
+				throw new Error("Failed to create order");
+			}
 		}
 
 		const assignedUser = 1; // Needs to be an integer (staff.id)
 
 		let productId = 1;
 		const existingProducts = await db.select().from(products).limit(1);
-		if (existingProducts.length > 0) productId = existingProducts[0].id;
+		if (existingProducts.length > 0) {
+			if (existingProducts[0] && existingProducts[0].id) {
+				productId = existingProducts[0].id;
+			}
+		}
 
 		// Create Pick Lists
 		const pickListData = [
@@ -60,10 +73,14 @@ export async function GET(req: Request) {
 			},
 		];
 
-		const insertedPickLists = [];
+		const insertedPickLists: typeof pickLists.$inferInsert[] = [];
 		for (const pl of pickListData) {
-			const [inserted] = await db.insert(pickLists).values(pl).returning();
-			insertedPickLists.push(inserted);
+			const inserted = await db.insert(pickLists).values(pl).returning();
+			if (inserted && inserted[0]) {
+				insertedPickLists.push(inserted[0]);
+			} else {
+				throw new Error("Failed to insert pick list");
+			}
 		}
 
 		// Create Pick List Items

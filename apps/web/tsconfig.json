@@ -1,48 +1,84 @@
 {
-	"compilerOptions": {
-		"target": "ES2017",
-		"lib": ["dom", "dom.iterable", "esnext"],
-		"allowJs": true,
-		"ignoreDeprecations": "5.0",
-		"skipLibCheck": true,
-		"strict": true,
-		"noEmit": false,
-		"esModuleInterop": true,
-		"module": "esnext",
-		"moduleResolution": "bundler",
-		"resolveJsonModule": true,
-		"isolatedModules": true,
-		"jsx": "react-jsx",
-		"incremental": true,
-		"plugins": [
-			{
-				"name": "next"
-			}
-		],
-		"baseUrl": ".",
-		"paths": {
-			"@/*": ["./src/*"],
-			"@evaluna/db": ["../../packages/db/src"],
-			"@evaluna/db/*": ["../../packages/db/src/*"],
-			"@evaluna/auth": ["../../packages/auth/src"],
-			"@evaluna/auth/*": ["../../packages/auth/src/*"],
-			"@evaluna/config": ["../../packages/config/src"],
-			"@evaluna/config/*": ["../../packages/config/src/*"],
-			"@evaluna/ui": ["../../packages/ui/src"],
-			"@evaluna/ui/*": ["../../packages/ui/src/*"],
-			"@evaluna/env": ["../../packages/env/src"],
-			"@evaluna/env/*": ["../../packages/env/src/*"],
-			"@evaluna/api": ["../../packages/api/src"],
-			"@evaluna/api/*": ["../../packages/api/src/*"]
-		}
-	},
-	"include": [
-		"./next-env.d.ts",
-		"./**/*.ts",
-		"./**/*.tsx",
-		"./.next/types/**/*.ts",
-		".next/types/**/*.ts",
-		".next/dev/types/**/*.ts"
-	],
-	"exclude": ["./node_modules"]
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "ignoreDeprecations": "5.0",
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": false,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+      "@evaluna/db": [
+        "../../packages/db/src/index.ts"
+      ],
+      "@evaluna/db/*": [
+        "../../packages/db/src/*.ts"
+      ],
+      "@evaluna/auth": [
+        "../../packages/auth/src"
+      ],
+      "@evaluna/auth/*": [
+        "../../packages/auth/src/*"
+      ],
+      "@evaluna/config": [
+        "../../packages/config/src"
+      ],
+      "@evaluna/config/*": [
+        "../../packages/config/src/*"
+      ],
+      "@evaluna/ui": [
+        "../../packages/ui/src"
+      ],
+      "@evaluna/ui/*": [
+        "../../packages/ui/src/*"
+      ],
+      "@evaluna/env": [
+        "../../packages/env/src"
+      ],
+      "@evaluna/env/*": [
+        "../../packages/env/src/*"
+      ],
+      "@evaluna/api": [
+        "../../packages/api/src/index.ts"
+      ],
+      "@evaluna/api/*": [
+        "../../packages/api/src/*.ts"
+      ]
+    }
+  },
+  "include": [
+    "./next-env.d.ts",
+    "./**/*.ts",
+    "./**/*.tsx",
+    "./.next/types/**/*.ts",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts",
+    ".next-build-check/types/**/*.ts",
+    ".next-build-check-2/types/**/*.ts",
+    ".next-build-check-3/types/**/*.ts",
+    ".next-build-check-4/types/**/*.ts"
+  ],
+  "exclude": [
+    "./node_modules"
+  ]
 }

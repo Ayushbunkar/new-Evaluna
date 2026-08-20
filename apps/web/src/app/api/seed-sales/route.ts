@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { auth } from "@evaluna/auth/server";
 import { desc, eq } from "drizzle-orm";
 import { headers } from "next/headers";
