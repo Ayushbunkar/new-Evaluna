@@ -41,15 +41,19 @@ export async function login(formData: FormData) {
 
 		// Auto-signup logic for test accounts
 		if (predefinedAccounts[email] && password === "Password@123") {
-			try {
-				// Try to login first
+			const existing = await db
+				.select()
+				.from(userTable)
+				.where(eq(userTable.email, email))
+				.limit(1);
+
+			if (existing.length > 0) {
 				const res = await auth.api.signInEmail({
 					body: { email, password, rememberMe },
 					headers: await headers(),
 				});
 				user = res.user;
-			} catch (err: any) {
-				// If login fails (user doesn't exist), sign them up
+			} else {
 				const res = await auth.api.signUpEmail({
 					body: {
 						email,
@@ -119,3 +123,4 @@ export async function logout() {
 	revalidatePath("/", "layout");
 	redirect("/");
 }
+
