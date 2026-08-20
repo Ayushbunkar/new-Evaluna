@@ -8,6 +8,7 @@ type DrizzleDb = Parameters<typeof drizzleAdapter>[0];
 
 export interface AuthOptions {
 	db: DrizzleDb;
+	schema?: Record<string, any>;
 	baseURL?: string;
 	trustedOrigins?: string[];
 	sessionExpiresIn?: number; // seconds, default 86400 (24h)
@@ -15,6 +16,7 @@ export interface AuthOptions {
 
 export function createAuth({
 	db,
+	schema,
 	baseURL,
 	trustedOrigins,
 	sessionExpiresIn = 60 * 60 * 24 * 365, // 1 year persistent sessions
@@ -25,7 +27,7 @@ export function createAuth({
 			"evaluna_super_secret_fallback_key_1234567890",
 		baseURL,
 		trustedOrigins,
-		database: drizzleAdapter(db, { provider: "pg" }),
+		database: drizzleAdapter(db, { provider: "pg", schema }),
 
 		// ── User ────────────────────────────────────────────────────────────────
 		user: {
