@@ -1,7 +1,10 @@
-import { rolePermissions, user as userTable } from "@evaluna/db/schema";
+import {
+	rolePermissions,
+	session as sessionTable,
+	user as userTable,
+} from "@evaluna/db/schema";
 import { eq } from "drizzle-orm";
-import { headers } from "next/headers";
-import { auth } from "./auth";
+import { cookies } from "next/headers";
 import { db } from "./db";
 import {
 	getPermissionsForRole,
@@ -15,45 +18,88 @@ import {
 } from "./session-cache";
 
 /**
+ * Extracts the session token from a cookie string.
+ * Handles all Better Auth / evaluna cookie name variants.
+ */
+function extractSessionToken(cookieHeader: string): string | null {
+	const pairs = cookieHeader.split(";").map((c) => c.trim());
+	const cookieMap: Record<string, string> = {};
+	for (const pair of pairs) {
+		const idx = pair.indexOf("=");
+		if (idx === -1) continue;
+		const key = pair.slice(0, idx).trim();
+		const val = pair.slice(idx + 1).trim();
+		cookieMap[key] = val;
+	}
+	return (
+		cookieMap["__Secure-evaluna.session_token"] ||
+		cookieMap["evaluna.session_token"] ||
+		cookieMap["__Secure-better-auth.session_token"] ||
+		cookieMap["better-auth.session_token"] ||
+		null
+	);
+}
+
+/**
  * Gets the fully enriched auth user including role and permissions.
- * Accepts an optional Headers object from the incoming request so that
- * the TRPC route handler can pass the actual fetch Request headers directly,
- * bypassing the Next.js `headers()` helper which may not reflect the
- * fetch-handler request in all server environments.
+ *
+ * When called from the TRPC route handler, pass the raw Request headers
+ * directly so cookies are correctly read on Vercel (where nextCookies()
+ * plugin causes auth.api.getSession to fail inside fetchRequestHandler).
+ *
+ * This function bypasses auth.api.getSession entirely and validates
+ * the session token directly against the database.
  */
 export async function getAuthUser(
-	incomingHeaders?: Headers | ReturnType<typeof headers> extends Promise<infer T> ? T : never,
+	incomingHeaders?: Headers,
 ): Promise<CachedSession | null> {
-	// Use provided headers (from raw Request) or fall back to next/headers
-	const reqHeaders: Headers = (incomingHeaders as Headers) ?? (await headers() as unknown as Headers);
+	let sessionToken: string | null = null;
 
-	let authSession: Awaited<ReturnType<typeof auth.api.getSession>> | null = null;
-	try {
-		authSession = await auth.api.getSession({
-			headers: reqHeaders,
-		});
-	} catch (err) {
-		console.error("[auth-guard] auth.api.getSession threw:", err);
+	if (incomingHeaders) {
+		// Called from fetch/TRPC handler — parse cookies from raw header
+		const cookieHeader = incomingHeaders.get("cookie") ?? "";
+		sessionToken = extractSessionToken(cookieHeader);
+	} else {
+		// Called from Server Components / Server Actions
+		const cookieStore = await cookies();
+		sessionToken =
+			cookieStore.get("__Secure-evaluna.session_token")?.value ||
+			cookieStore.get("evaluna.session_token")?.value ||
+			cookieStore.get("__Secure-better-auth.session_token")?.value ||
+			cookieStore.get("better-auth.session_token")?.value ||
+			null;
+	}
+
+	if (!sessionToken) {
 		return null;
 	}
 
-	if (!authSession?.user || !authSession?.session) {
-		return null;
-	}
-
-	const token = authSession.session.token;
-
-	// Check in-memory cache
-	const cached = getCachedSession(token);
+	// 1. Check in-memory cache
+	const cached = getCachedSession(sessionToken);
 	if (cached) {
 		if (new Date() > cached.expiresAt) return null;
 		if (!cached.isActive) return null;
 		return cached;
 	}
 
-	// Resolve user details from our extended user table
+	// 2. Look up session directly in DB (no Better Auth plugin chain)
+	let sessionRecord: typeof sessionTable.$inferSelect | undefined;
+	try {
+		sessionRecord = await db.query.session.findFirst({
+			where: eq(sessionTable.token, sessionToken),
+		});
+	} catch (err) {
+		console.error("[auth-guard] session lookup failed:", err);
+		return null;
+	}
+
+	if (!sessionRecord || sessionRecord.expiresAt < new Date()) {
+		return null;
+	}
+
+	// 3. Resolve user from extended user table
 	const dbUser = await db.query.user.findFirst({
-		where: eq(userTable.id, authSession.user.id),
+		where: eq(userTable.id, sessionRecord.userId),
 	});
 
 	if (!dbUser?.is_active) {
@@ -63,7 +109,7 @@ export async function getAuthUser(
 
 	const role = (dbUser.role || "sales_person") as Role;
 
-	// Resolve permissions defensively
+	// 4. Resolve permissions defensively
 	let permissions: Permission[] = getPermissionsForRole(role as Role);
 	try {
 		const permsRows = await db
@@ -82,7 +128,7 @@ export async function getAuthUser(
 		});
 	}
 
-	// Build enriched session
+	// 5. Build enriched session
 	const enriched: CachedSession = {
 		userId: dbUser.id,
 		email: dbUser.email,
@@ -92,9 +138,9 @@ export async function getAuthUser(
 		isSuperadmin: dbUser.is_superadmin ?? false,
 		isActive: dbUser.is_active ?? true,
 		permissions: permissions,
-		expiresAt: authSession.session.expiresAt,
+		expiresAt: sessionRecord.expiresAt,
 	};
 
-	setCachedSession(token, enriched);
+	setCachedSession(sessionToken, enriched);
 	return enriched;
 }
