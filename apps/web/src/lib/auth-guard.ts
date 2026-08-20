@@ -1,3 +1,4 @@
+
 import { rolePermissions } from "@evaluna/db/schema";
 import {
 	session as sessionTable,
@@ -18,65 +19,35 @@ import {
 } from "./session-cache";
 
 /**
- * Extracts the session token from a cookie string.
- * Handles all Better Auth / evaluna cookie name variants.
- */
-function extractSessionToken(cookieHeader: string): string | null {
-	const pairs = cookieHeader.split(";").map((c) => c.trim());
-	const cookieMap: Record<string, string> = {};
-	for (const pair of pairs) {
-		const idx = pair.indexOf("=");
-		if (idx === -1) continue;
-		const key = pair.slice(0, idx).trim();
-		const val = pair.slice(idx + 1).trim();
-		cookieMap[key] = val;
-	}
-	return (
-		cookieMap["__Secure-evaluna.session_token"] ||
-		cookieMap["evaluna.session_token"] ||
-		cookieMap["__Secure-better-auth.session_token"] ||
-		cookieMap["better-auth.session_token"] ||
-		null
-	);
-}
-
-/**
  * Gets the fully enriched auth user including role and permissions.
  *
- * When called from the TRPC route handler, pass the raw Request headers
- * directly so cookies are correctly read on Vercel (where nextCookies()
- * plugin causes auth.api.getSession to fail inside fetchRequestHandler).
- *
  * This function bypasses auth.api.getSession entirely and validates
- * the session token directly against the database.
+ * the session token directly against the database to avoid Better Auth
+ * plugin conflicts with Next.js cookie writing rules in route handlers.
  */
-export async function getAuthUser(
-	incomingHeaders?: Headers,
-): Promise<CachedSession | null> {
-	let sessionToken: string | null = null;
-	console.log("[auth-guard] incoming headers cookie:", incomingHeaders?.get("cookie"));
-
-	if (incomingHeaders) {
-		// Called from fetch/TRPC handler — parse cookies from raw header
-		const cookieHeader = incomingHeaders.get("cookie") ?? "";
-		sessionToken = extractSessionToken(cookieHeader);
-	} else {
-		// Called from Server Components / Server Actions
-		const cookieStore = await cookies();
-		sessionToken =
-			cookieStore.get("__Secure-evaluna.session_token")?.value ||
-			cookieStore.get("evaluna.session_token")?.value ||
-			cookieStore.get("__Secure-better-auth.session_token")?.value ||
-			cookieStore.get("better-auth.session_token")?.value ||
-			null;
-	}
-
-	console.log("[auth-guard] extracted session token:", sessionToken ? sessionToken.substring(0, 10) + "..." : "null");
-	if (!sessionToken) {
+export async function getAuthUser(): Promise<CachedSession | null> {
+	// 1. Read cookies safely using Next.js native API (works everywhere for read)
+	let cookieStore;
+	try {
+		cookieStore = await cookies();
+	} catch (err) {
+		console.error("[auth-guard] Failed to await cookies():", err);
 		return null;
 	}
 
-	// 1. Check in-memory cache
+	const sessionToken =
+		cookieStore.get("__Secure-evaluna.session_token")?.value ||
+		cookieStore.get("evaluna.session_token")?.value ||
+		cookieStore.get("__Secure-better-auth.session_token")?.value ||
+		cookieStore.get("better-auth.session_token")?.value ||
+		null;
+
+	if (!sessionToken) {
+		console.log("[auth-guard] sessionToken is null. Cookies found:", cookieStore.getAll().map(c => c.name).join(", "));
+		return null;
+	}
+
+	// 2. Check in-memory cache
 	const cached = getCachedSession(sessionToken);
 	if (cached) {
 		if (new Date() > cached.expiresAt) return null;
@@ -84,8 +55,8 @@ export async function getAuthUser(
 		return cached;
 	}
 
-	// 2. Look up session directly in DB (no Better Auth plugin chain)
-	let sessionRecord: typeof sessionTable.$inferSelect | undefined;
+	// 3. Look up session directly in DB
+	let sessionRecord;
 	try {
 		sessionRecord = await db.query.session.findFirst({
 			where: eq(sessionTable.token, sessionToken),
@@ -99,20 +70,19 @@ export async function getAuthUser(
 		return null;
 	}
 
-	// 3. Resolve user from extended user table
+	// 4. Resolve user
 	const dbUser = await db.query.user.findFirst({
 		where: eq(userTable.id, sessionRecord.userId),
 	});
 
 	if (!dbUser?.is_active) {
-		console.error("[auth-guard] dbUser is inactive or null!", { dbUser });
 		return null;
 	}
 
 	const role = (dbUser.role || "sales_person") as Role;
 
-	// 4. Resolve permissions defensively
-	let permissions: Permission[] = getPermissionsForRole(role as Role);
+	// 5. Resolve permissions
+	let permissions: Permission[] = getPermissionsForRole(role);
 	try {
 		const permsRows = await db
 			.select()
@@ -124,13 +94,9 @@ export async function getAuthUser(
 			);
 		}
 	} catch (error) {
-		console.warn("[auth-guard] Falling back to static permissions", {
-			role,
-			error,
-		});
+		// fall back to static
 	}
 
-	// 5. Build enriched session
 	const enriched: CachedSession = {
 		userId: dbUser.id,
 		email: dbUser.email,
