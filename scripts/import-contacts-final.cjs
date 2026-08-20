@@ -1,5 +1,6 @@
 const fs = require('fs');
 const { Pool } = require('pg');
+require('dotenv').config({ path: './.env' });
 
 // Function to clean and extract the first phone number
 function cleanPhoneNumber(phone) {
@@ -14,13 +15,9 @@ function cleanPhoneNumber(phone) {
   return cleaned;
 }
 
-// Database connection configuration
+// Database connection configuration using DATABASE_URL from .env
 const pool = new Pool({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'evaluna',
-  password: 'yourpassword',
-  port: 5432,
+  connectionString: process.env.DATABASE_URL
 });
 
 async function importContacts() {
