@@ -23,6 +23,7 @@ import { db } from "@/lib/db";
 import { protectedProcedure, roleProcedure, router } from "../init";
 
 export const deliveryRouter = router({
+	list: publicProcedure.query(() => []), 
 	// ── Routes ─────────────────────────────────────────────────────────────
 	listRoutes: roleProcedure(["admin", "manager", "delivery_manager"])
 		.input(z.object({ branchId: z.number().optional() }))
