@@ -9,9 +9,13 @@ if (!process.env.DATABASE_URL) {
 }
 
 const cleanUrl = DATABASE_URL.replace(/^"|"$/g, "");
+const isLocal = cleanUrl.includes("localhost") || cleanUrl.includes("127.0.0.1");
 
 // Use pg for full transaction support
-const pool = new Pool({ connectionString: cleanUrl });
+const pool = new Pool({ 
+    connectionString: cleanUrl,
+    ssl: isLocal ? undefined : { rejectUnauthorized: false }
+});
 export const db = drizzle(pool, { schema });
 
 // re-export pglite instance for any code that needs direct access (null for postgres mode)
