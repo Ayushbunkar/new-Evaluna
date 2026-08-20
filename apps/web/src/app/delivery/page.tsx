@@ -15,7 +15,8 @@ export default async function DeliveryPage() {
 	const trpc = await getServerClient();
 
 	// Ensure the user is a delivery boy/driver
-	const session = await (trpc as any).auth.getSession();
+	const { getAuthUser } = await import("@/lib/auth-guard");
+const session = await getAuthUser();
 	if (
 		!session ||
 		(session.user.role !== "delivery_boy" &&
@@ -25,7 +26,8 @@ export default async function DeliveryPage() {
 		redirect("/");
 	}
 
-	const myTrips = await (trpc as any).delivery.myTrips();
+	const serverClient = await import("@/lib/trpc/serverClient").then(m => m.getServerClient());
+	const myTrips = await serverClient.delivery.myTrips().catch(() => []);
 
 	// Find the currently active trip
 	const activeTrip = myTrips.find(
@@ -38,3 +40,5 @@ export default async function DeliveryPage() {
 		</div>
 	);
 }
+
+

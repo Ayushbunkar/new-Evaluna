@@ -15,7 +15,8 @@ export default async function DeliveryManagementPage() {
 
 	// Fetch initial data for the current user's branch
 	const routes = await trpc.delivery.listRoutes({});
-	const vehicles = await (trpc as any).vehicles.list({});
+	const serverClient = await getServerClient();
+	const vehicles = await serverClient.vehicles.list({});
 	const staff = await (trpc as any).staff.list({}); // Assuming staff list includes drivers
 
 	// Filter staff to find delivery drivers
@@ -42,3 +43,4 @@ export default async function DeliveryManagementPage() {
 		</div>
 	);
 }
+
