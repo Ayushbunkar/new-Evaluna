@@ -1,5 +1,5 @@
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { Pool } from "pg";
 import * as schema from "./schema";
 
 const DATABASE_URL = process.env.DATABASE_URL || "postgresql://mock:mock@localhost:5432/mock";
@@ -10,9 +10,9 @@ if (!process.env.DATABASE_URL) {
 
 const cleanUrl = DATABASE_URL.replace(/^"|"$/g, "");
 
-// Use postgres.js for full transaction support (better than neon-http for full ERPs)
-const sql = postgres(cleanUrl, { prepare: false });
-export const db = drizzle(sql, { schema });
+// Use pg for full transaction support
+const pool = new Pool({ connectionString: cleanUrl });
+export const db = drizzle(pool, { schema });
 
 // re-export pglite instance for any code that needs direct access (null for postgres mode)
 export const pglite = null;

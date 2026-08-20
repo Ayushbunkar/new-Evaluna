@@ -40,7 +40,7 @@
 		"leaflet": "^1.9.4",
 		"lucide-react": "^1.33.0",
 		"next": "^14.2.15",
-		"postgres": "^3.4.9",
+		"pg": "^8.23.0",
 		"react": "^18.3.1",
 		"react-barcode": "^1.6.1",
 		"react-dom": "^18.3.1",
