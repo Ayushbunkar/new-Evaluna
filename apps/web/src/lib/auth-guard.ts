@@ -54,6 +54,7 @@ export async function getAuthUser(
 	incomingHeaders?: Headers,
 ): Promise<CachedSession | null> {
 	let sessionToken: string | null = null;
+	console.log("[auth-guard] incoming headers cookie:", incomingHeaders?.get("cookie"));
 
 	if (incomingHeaders) {
 		// Called from fetch/TRPC handler — parse cookies from raw header
@@ -70,6 +71,7 @@ export async function getAuthUser(
 			null;
 	}
 
+	console.log("[auth-guard] extracted session token:", sessionToken ? sessionToken.substring(0, 10) + "..." : "null");
 	if (!sessionToken) {
 		return null;
 	}
@@ -144,3 +146,4 @@ export async function getAuthUser(
 	setCachedSession(sessionToken, enriched);
 	return enriched;
 }
+
