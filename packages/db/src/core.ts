@@ -307,8 +307,29 @@ export const transactionsRelations = relations(transactions, ({ one }) => ({
 	}),
 }));
 
+// --- Customer Contacts -------------------------------------------------------
+export const customerContacts = pgTable("customer_contacts", {
+	id: serial("id").primaryKey(),
+	customer_id: integer("customer_id")
+		.references(() => customers.id, { onDelete: "cascade" })
+		.notNull(),
+	name: varchar("name", { length: 255 }).notNull(),
+	email: varchar("email", { length: 255 }),
+	phone: varchar("phone", { length: 50 }),
+	designation: varchar("designation", { length: 255 }),
+	is_primary: boolean("is_primary").default(false),
+	created_at: timestamp("created_at").defaultNow(),
+});
+
+export const customerContactsRelations = relations(customerContacts, ({ one }) => ({
+	customer: one(customers, {
+		fields: [customerContacts.customer_id],
+		references: [customers.id],
+	}),
+}));
 export const customersRelations = relations(customers, ({ many }) => ({
 	orders: many(orders),
+	contacts: many(customerContacts),
 }));
 
 export const branchInventory = pgTable(
@@ -2243,6 +2264,7 @@ export const promotionSchemes = pgTable("promotion_schemes", {
 });
 
 // ── Duplicate Picking Relations Removed ────────────────────────────--
+
 
 
 
