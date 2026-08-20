@@ -92,6 +92,12 @@ export default function CustomersPage() {
 		{ key: "phone", header: tc("phone"), hideOnMobile: true },
 		{ key: "address", header: tc("address"), hideOnMobile: true },
 		{
+			key: "village",
+			header: "Village",
+			sortable: true,
+			hideOnMobile: false,
+		},
+		{
 			key: "loyalty_tier",
 			header: "Tier",
 			sortable: true,
@@ -199,6 +205,7 @@ export default function CustomersPage() {
 		onSuccess: () => {
 			utils.customers.list.invalidate();
 			toast.success(t("deleted"));
+			setIsDeleteOpen(false);
 		},
 		onError: () => {
 			toast.error(t("deleteError"));
@@ -254,7 +261,7 @@ export default function CustomersPage() {
 		setEditingId(c.id);
 		form.reset();
 		form.setFieldValue("name", c.name);
-		form.setFieldValue("email", c.email);
+		form.setFieldValue("email", c.email ?? "");
 		form.setFieldValue("phone", c.phone ?? "");
 		form.setFieldValue("address", c.address ?? "");
 		form.setFieldValue(
@@ -317,11 +324,11 @@ export default function CustomersPage() {
 							<Skeleton className="h-4 w-24" />
 							<Skeleton className="h-4 w-16" />
 							<Skeleton className="h-8 w-20" />
-						</div>
+						}
 					))}
 				</CardContent>
 			</Card>
-		);
+		)
 	}
 
 	if (error) {
@@ -331,7 +338,7 @@ export default function CustomersPage() {
 					<p className="text-red-500">{error.message}</p>
 				</CardContent>
 			</Card>
-		);
+		)
 	}
 
 	return (
@@ -350,11 +357,10 @@ export default function CustomersPage() {
 							},
 						]}
 					>
-						<Button size="sm" onClick={openCreate}>
-							<PlusCircle className="mr-2 h-4 w-4" />
-							{t("addCustomer")}
-						</Button>
-					</SearchFilter>
+					<Button size="sm" onClick={openCreate}>
+						<PlusCircle className="mr-2 h-4 w-4" />
+						{t("addCustomer")}
+					</Button>
 				</CardHeader>
 				<CardContent className="p-0">
 					<DataTable
@@ -407,7 +413,7 @@ export default function CustomersPage() {
 													}
 												/>
 											</div>
-										</div>
+										}
 									)}
 								</form.Field>
 								<form.Field name="email">
@@ -429,7 +435,7 @@ export default function CustomersPage() {
 													}
 												/>
 											</div>
-										</div>
+										}
 									)}
 								</form.Field>
 								<form.Field name="phone">
@@ -440,9 +446,10 @@ export default function CustomersPage() {
 												id="phone"
 												value={field.state.value}
 												onChange={(e) => field.handleChange(e.target.value)}
+												onBlur={field.handleBlur}
 												className="col-span-3"
 											/>
-										</div>
+										}
 									)}
 								</form.Field>
 								<form.Field name="address">
@@ -453,9 +460,24 @@ export default function CustomersPage() {
 												id="address"
 												value={field.state.value}
 												onChange={(e) => field.handleChange(e.target.value)}
+												onBlur={field.handleBlur}
 												className="col-span-3"
 											/>
-										</div>
+										}
+									)}
+								</form.Field>
+								<form.Field name="village">
+									{(field) => (
+										<div className="flex flex-col gap-2 sm:grid sm:grid-cols-4 sm:items-center sm:gap-4">
+											<Label htmlFor="village">Village</Label>
+											<Input
+												id="village"
+												value={field.state.value}
+												onChange={(e) => field.handleChange(e.target.value)}
+												onBlur={field.handleBlur}
+												className="col-span-3"
+											/>
+										}
 									)}
 								</form.Field>
 								<form.Field name="status">
@@ -475,46 +497,45 @@ export default function CustomersPage() {
 													<SelectItem value="active">{tc("active")}</SelectItem>
 													<SelectItem value="inactive">
 														{tc("inactive")}
-													</SelectItem>
-												</SelectContent>
-											</Select>
-										</div>
+													</SelectContent>
+												</Select>
+											</div>
+										}
 									)}
-								</form.Field>
-							</div>
-							<DialogFooter>
-								<Button
-									variant="secondary"
-									onClick={() => setIsDialogOpen(false)}
-								>
-									{tc("cancel")}
-								</Button>
-								<form.Subscribe selector={(state) => state.isSubmitting}>
-									{(isSubmitting) => (
-										<Button
-											type="submit"
-											disabled={
-												isSubmitting ||
-												createMutation.isPending ||
-												updateMutation.isPending
-											}
-										>
-											{isEditing ? t("updateCustomer") : t("addCustomer")}
-										</Button>
-									)}
-								</form.Subscribe>
-							</DialogFooter>
-						</form>
-					</DialogContent>
-				</Dialog>
+								</div>
+								<DialogFooter>
+									<Button
+										variant="secondary"
+										onClick={() => setIsDialogOpen(false)}
+									>
+										{tc("cancel")}
+									</Button>
+									<form.Subscribe selector={(state) => state.isSubmitting}>
+										{(isSubmitting) => (
+											<Button
+												type="submit"
+												disabled={
+													isSubmitting ||
+													createMutation.isPending ||
+													updateMutation.isPending
+												}
+											>
+												{isEditing ? t("updateCustomer") : t("addCustomer")}
+											</Button>
+										)}
+									</form.Subscribe>
+								</DialogFooter>
+							</form>
+						</DialogContent>
+					</Dialog>
 
-				<DeleteConfirmationDialog
-					isOpen={isDeleteOpen}
-					onOpenChange={setIsDeleteOpen}
-					onConfirm={handleDelete}
-					isDeleting={deleteMutation.isPending}
-				/>
-			</Card>
-		</PageTransition>
-	);
+					<DeleteConfirmationDialog
+						isOpen={isDeleteOpen}
+						onOpenChange={setIsDeleteOpen}
+						onConfirm={handleDelete}
+						isDeleting={deleteMutation.isPending}
+					/>
+				</Card>
+			</PageTransition>
+		);
 }
