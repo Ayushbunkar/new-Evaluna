@@ -29,6 +29,8 @@ export async function login(formData: FormData) {
 		"billing@evaluna.com": "billing",
 	};
 
+	let user: any = null;
+
 	try {
 		// Sign out any existing session first to avoid stale session redirect loops
 		try {
