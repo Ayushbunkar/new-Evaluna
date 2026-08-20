@@ -43,7 +43,7 @@ const nextConfig = {
 	},
 	
 	experimental: {
-		serverExternalPackages: ['postgres'],
+		serverComponentsExternalPackages: ['postgres'],
 		optimizePackageImports: [
 			"lucide-react",
 			"@evaluna/ui",
