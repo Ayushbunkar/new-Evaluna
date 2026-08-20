@@ -248,3 +248,19 @@ export const tripCollectionsRelations = relations(
 		}),
 	}),
 );
+
+export const deliveryStops = pgTable("delivery_stops", {
+	id: serial("id").primaryKey(),
+	trip_id: integer("trip_id")
+		.references(() => deliveryTrips.id)
+		.notNull(),
+	order_id: integer("order_id").references(() => orders.id),
+	customer_id: integer("customer_id")
+		.references(() => customers.id)
+		.notNull(),
+	sequence: integer("sequence").notNull(),
+	status: varchar("status", { length: 50 }).default("pending"), // pending, delivered, returned, failed
+	comments: text("comments"),
+	created_at: timestamp("created_at").defaultNow(),
+	resolved_at: timestamp("resolved_at"),
+});

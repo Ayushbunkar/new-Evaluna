@@ -2204,101 +2204,6 @@ export const billingInvoicesRelations = relations(
 	}),
 );
 
-// ── Delivery Routes ────────────────────────────────────────────────────────────────
-export const deliveryRoutes = pgTable("delivery_routes", {
-	id: serial("id").primaryKey(),
-	name: varchar("name", { length: 100 }).notNull(),
-	description: text("description"),
-	branch_id: integer("branch_id").references(() => branches.id),
-	estimated_distance: decimal("estimated_distance", {
-		precision: 10,
-		scale: 2,
-	}),
-	estimated_time: integer("estimated_time"), // in minutes
-	priority: varchar("priority", { length: 20 }).default("normal"), // low, normal, high, urgent
-	is_active: boolean("is_active").default(true),
-	created_at: timestamp("created_at").defaultNow(),
-	updated_at: timestamp("updated_at")
-		.defaultNow()
-		.$onUpdateFn(() => new Date()),
-});
-
-export const routeStops = pgTable("route_stops", {
-	id: serial("id").primaryKey(),
-	route_id: integer("route_id")
-		.references(() => deliveryRoutes.id)
-		.notNull(),
-	customer_id: integer("customer_id")
-		.references(() => customers.id)
-		.notNull(),
-	sequence: integer("sequence").notNull(),
-	estimated_arrival_time: timestamp("estimated_arrival_time"),
-	estimated_departure_time: timestamp("estimated_departure_time"),
-	distance_from_previous: decimal("distance_from_previous", {
-		precision: 10,
-		scale: 2,
-	}),
-	notes: text("notes"),
-	created_at: timestamp("created_at").defaultNow(),
-});
-
-// ── Delivery Trips ────────────────────────────────────────────────────────────────
-export const deliveryTrips = pgTable("delivery_trips", {
-	id: serial("id").primaryKey(),
-	route_id: integer("route_id").references(() => deliveryRoutes.id),
-	driver_id: varchar("driver_id", { length: 255 }).notNull(),
-	vehicle_id: integer("vehicle_id"),
-	status: varchar("status", { length: 20 }).default("pending"), // pending, active, completed, cancelled
-	start_time: timestamp("start_time"),
-	end_time: timestamp("end_time"),
-	total_distance: decimal("total_distance", { precision: 10, scale: 2 }),
-	expected_cash_collection: decimal("expected_cash_collection", {
-		precision: 12,
-		scale: 2,
-	}),
-	actual_cash_collection: decimal("actual_cash_collection", {
-		precision: 12,
-		scale: 2,
-	}),
-	expected_stops: integer("expected_stops"),
-	completed_stops: integer("completed_stops"),
-	created_at: timestamp("created_at").defaultNow(),
-	updated_at: timestamp("updated_at")
-		.defaultNow()
-		.$onUpdateFn(() => new Date()),
-});
-
-export const deliveryStops = pgTable("delivery_stops", {
-	id: serial("id").primaryKey(),
-	trip_id: integer("trip_id")
-		.references(() => deliveryTrips.id)
-		.notNull(),
-	order_id: integer("order_id").references(() => orders.id),
-	customer_id: integer("customer_id")
-		.references(() => customers.id)
-		.notNull(),
-	sequence: integer("sequence").notNull(),
-	status: varchar("status", { length: 50 }).default("pending"), // pending, delivered, returned, failed
-	comments: text("comments"),
-	created_at: timestamp("created_at").defaultNow(),
-	resolved_at: timestamp("resolved_at"),
-});
-
-export const tripStops = pgTable("trip_stops", {
-	id: serial("id").primaryKey(),
-	trip_id: integer("trip_id")
-		.references(() => deliveryTrips.id)
-		.notNull(),
-	customer_id: integer("customer_id")
-		.references(() => customers.id)
-		.notNull(),
-	sequence: integer("sequence").notNull(),
-	status: varchar("status", { length: 50 }).default("pending"), // pending, approved, rejected
-	comments: text("comments"),
-	created_at: timestamp("created_at").defaultNow(),
-	resolved_at: timestamp("resolved_at"),
-});
-
 // ── Approvals ─────────────────────────────────────────────────────────────────
 export const approvals = pgTable("approvals", {
 	id: serial("id").primaryKey(),
@@ -2338,5 +2243,6 @@ export const promotionSchemes = pgTable("promotion_schemes", {
 });
 
 // ── Duplicate Picking Relations Removed ────────────────────────────--
+
 
 
