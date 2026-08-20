@@ -19,6 +19,9 @@ import { dashboardRouter } from "./routers/dashboard";
 import { deliveryRouter } from "./routers/delivery";
 import { driverRouter } from "./routers/driver";
 import { expensesRouter } from "./routers/expenses";
+import { discountsRouter } from "./routers/discounts";
+import { paymentsRouter } from "./routers/payments";
+import { vehiclesRouter } from "./routers/vehicles";
 import { financeRouter } from "./routers/finance";
 import { hrRouter } from "./routers/hr";
 import { hrmsRouter } from "./routers/hrms";
@@ -104,8 +107,13 @@ export const appRouter = router({
 	picking: pickingRouter,
 	clientSettings: clientSettingsRouter,
 	expenses: expensesRouter,
+	discounts: discountsRouter,
+	payments: paymentsRouter,
+	vehicles: vehiclesRouter,
 });
 
 export type AppRouter = typeof appRouter;
 export type RouterOutputs = inferRouterOutputs<AppRouter>;
 export type RouterInputs = inferRouterInputs<AppRouter>;
+
+
