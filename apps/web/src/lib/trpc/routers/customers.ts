@@ -1,4 +1,4 @@
-import { customerLedger, customers, orders } from "@evaluna/db/schema";
+import { customerLedger, customers, orders, customerContacts } from "@evaluna/db/schema";
 import { and, desc, eq, isNull, or } from "drizzle-orm";
 import { z } from "zod/v4";
 import { db } from "@/lib/db";
@@ -73,6 +73,7 @@ export const customersRouter = router({
 						orderBy: [desc(orders.created_at)],
 						limit: 50,
 					},
+					contacts: true,
 				},
 			});
 
@@ -270,4 +271,32 @@ export const customersRouter = router({
 				.where(and(...conditions));
 			return { success: true };
 		}),
+	addContact: roleProcedure(["admin", "manager", "auditor", "sales_person"])
+		.input(z.object({
+			customer_id: z.number(),
+			name: z.string().min(1),
+			email: z.string().email().optional().nullable(),
+			phone: z.string().optional().nullable(),
+			designation: z.string().optional().nullable(),
+			is_primary: z.boolean().default(false)
+		}))
+		.mutation(async ({ ctx, input }) => {
+			const [contact] = await db.insert(customerContacts).values({
+				customer_id: input.customer_id,
+				name: input.name,
+				email: input.email,
+				phone: input.phone,
+				designation: input.designation,
+				is_primary: input.is_primary
+			}).returning();
+			return contact;
+		}),
+
+	deleteContact: roleProcedure(["admin", "manager", "auditor", "sales_person"])
+		.input(z.object({ id: z.number() }))
+		.mutation(async ({ ctx, input }) => {
+			await db.delete(customerContacts).where(eq(customerContacts.id, input.id));
+			return { success: true };
+		}),
 });
+

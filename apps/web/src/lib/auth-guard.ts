@@ -1,8 +1,8 @@
+import { rolePermissions } from "@evaluna/db/schema";
 import {
-	rolePermissions,
 	session as sessionTable,
 	user as userTable,
-} from "@evaluna/db/schema";
+} from "@evaluna/db/auth-schema";
 import { eq } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { db } from "./db";
