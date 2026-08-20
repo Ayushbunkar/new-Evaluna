@@ -26,8 +26,15 @@ export {
 	superadminProcedure,
 };
 
-export const createTRPCContext = async (): Promise<TRPCContext> => {
-	const user = await getAuthUser();
+/**
+ * Creates the TRPC context.
+ * When called from the fetch route handler, opts.req contains the incoming
+ * Request so we can pass its headers directly to getAuthUser — this ensures
+ * cookies are always forwarded correctly on Vercel (where next/headers()
+ * may not fully reflect the fetch-handler request).
+ */
+export const createTRPCContext = async (opts?: { req?: Request }): Promise<TRPCContext> => {
+	const user = await getAuthUser(opts?.req ? new Headers(opts.req.headers) : undefined);
 
 	// Transform CachedSession to match BaseUser interface
 	const baseUser = user
