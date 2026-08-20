@@ -20,13 +20,15 @@ import {
  */
 async function getSessionToken(): Promise<string | null> {
 	const cookieStore = await cookies();
-	const token =
-		cookieStore.get("evaluna.session_token")?.value ||
-		cookieStore.get("__Secure-evaluna.session_token")?.value ||
-		cookieStore.get("better-auth.session_token")?.value ||
-		cookieStore.get("__Secure-better-auth.session_token")?.value;
+	
+	// Fallback: search for any session token cookie
+	for (const cookie of cookieStore.getAll()) {
+		if (cookie.name.includes("session_token") || cookie.name.includes("session")) {
+			return cookie.value;
+		}
+	}
 
-	return token || null;
+	return null;
 }
 
 /**
@@ -34,18 +36,7 @@ async function getSessionToken(): Promise<string | null> {
  * Uses LRU cache to avoid hammering the database.
  */
 export async function getAuthUser(): Promise<CachedSession | null> {
-	const token = await getSessionToken();
-	if (!token) return null;
-
-	// 1. Check in-memory cache
-	const cached = getCachedSession(token);
-	if (cached) {
-		if (new Date() > cached.expiresAt) return null;
-		if (!cached.isActive) return null;
-		return cached;
-	}
-
-	// 2. Fetch from Better Auth
+	// 2. Fetch from Better Auth directly first to bypass cookie guessing issues
 	const reqHeaders = await headers();
 	const authSession = await auth.api.getSession({
 		headers: reqHeaders,
@@ -56,6 +47,16 @@ export async function getAuthUser(): Promise<CachedSession | null> {
 			authSession,
 		});
 		return null;
+	}
+	
+	const token = authSession.session.token;
+
+	// 1. Check in-memory cache AFTER getting the official token
+	const cached = getCachedSession(token);
+	if (cached) {
+		if (new Date() > cached.expiresAt) return null;
+		if (!cached.isActive) return null;
+		return cached;
 	}
 
 	// 3. Resolve user details directly from our extended user table
@@ -82,7 +83,7 @@ export async function getAuthUser(): Promise<CachedSession | null> {
 			.where(eq(rolePermissions.role_name, role));
 		if (permsRows.length > 0) {
 			permissions = permsRows.map(
-				(r) => `${r.domain}.${r.action}` as Permission,
+				(r) => `.` as Permission,
 			);
 		}
 	} catch (error) {
