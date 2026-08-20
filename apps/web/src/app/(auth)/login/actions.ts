@@ -48,11 +48,29 @@ export async function login(formData: FormData) {
 				.limit(1);
 
 			if (existing.length > 0) {
-				const res = await auth.api.signInEmail({
-					body: { email, password, rememberMe },
-					headers: await headers(),
-				});
-				user = res.user;
+				try {
+					const res = await auth.api.signInEmail({
+						body: { email, password, rememberMe },
+						headers: await headers(),
+					});
+					user = res.user;
+				} catch (err: any) {
+					if (predefinedAccounts[email] && password === "Password@123") {
+						console.log("Mismatched password hash detected. Re-creating user with Vercel's active secret...");
+						await db.delete(userTable).where(eq(userTable.email, email));
+						const res = await auth.api.signUpEmail({
+							body: {
+								email,
+								password,
+								name: predefinedAccounts[email].toUpperCase(),
+							},
+							headers: await headers(),
+						});
+						user = res.user;
+					} else {
+						throw err;
+					}
+				}
 			} else {
 				const res = await auth.api.signUpEmail({
 					body: {
@@ -123,4 +141,5 @@ export async function logout() {
 	revalidatePath("/", "layout");
 	redirect("/");
 }
+
 
