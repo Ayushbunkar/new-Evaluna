@@ -605,6 +605,7 @@ export function SaleCompletionScreen({
 		} catch (err: any) {
 			console.error("WhatsApp share error:", err);
 			toast.error("Could not prepare PDF for sharing.", { id: toastId });
+		}
 	};
 
 	const handleEmail = () => {
