@@ -105,11 +105,9 @@ export function Sidebar({
 			<div className="flex-1 space-y-4 overflow-y-auto py-4">
 				<div className="px-3 py-2">
 					<h2 className="mb-2 flex items-center gap-2 px-4 font-semibold text-lg tracking-tight">
-						<span className="rounded-md bg-primary p-1 text-primary-foreground">
-							<Package className="h-4 w-4" />
-						</span>
-						Evaluna ERP
-					</h2>
+					<img src="/logo.jpg" alt="Evaluna Logo" className="h-8 w-8 rounded-lg object-contain" />
+					Evaluna ERP
+				</h2>
 					<div className="mt-6 space-y-1">
 						{filteredItems.map((item) => {
 							const isActive =

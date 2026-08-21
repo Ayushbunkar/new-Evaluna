@@ -338,7 +338,7 @@ export function SaleCompletionScreen({
 	};
 
 	const generateInvoicePdfBlob = async (overridePageSize?: "A4" | "80mm") => {
-		const { pdf, Document, Page, Text, View, StyleSheet, Font } = await import("@react-pdf/renderer");
+		const { pdf, Document, Page, Text, View, StyleSheet, Font, Image } = await import("@react-pdf/renderer");
 
 		try {
 			Font.register({
@@ -510,11 +510,14 @@ export function SaleCompletionScreen({
 
 					{/* Header */}
 					<View style={styles.header}>
-						<View style={styles.storeInfo}>
-							<Text style={styles.title}>{STORE.name}</Text>
-							<Text style={styles.subtitle}>{STORE.address}</Text>
-							<Text style={styles.subtitle}>{STORE.city}</Text>
-							<Text style={styles.subtitle}>Phone: {STORE.phone}</Text>
+						<View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+							<Image src={`${typeof window !== "undefined" ? window.location.origin : ""}/logo.jpg`} style={{ width: 40, height: 40, borderRadius: 8 }} />
+							<View style={styles.storeInfo}>
+								<Text style={styles.title}>{STORE.name}</Text>
+								<Text style={styles.subtitle}>{STORE.address}</Text>
+								<Text style={styles.subtitle}>{STORE.city}</Text>
+								<Text style={styles.subtitle}>Phone: {STORE.phone}</Text>
+							</View>
 						</View>
 						<View style={styles.invoiceMeta}>
 							<Text style={styles.metaTitle}>INVOICE</Text>

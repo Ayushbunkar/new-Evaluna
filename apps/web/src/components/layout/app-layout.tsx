@@ -303,7 +303,7 @@ export function AppLayout({
 				</Button>
 
 				<div className="flex shrink-0 items-center gap-1 md:w-[240px]">
-					<Package2Icon className="h-6 w-6 text-primary" />
+					<img src="/logo.jpg" alt="Evaluna Logo" className="h-8 w-8 rounded-lg object-contain" />
 					<span className="hidden bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text font-bold text-base text-transparent tracking-tight sm:text-lg md:inline-block">
 						Evaluna ERP
 					</span>
@@ -478,6 +478,7 @@ export function AppLayout({
 											? role.replace("_", " ")
 											: session?.user?.role?.replace("_", " ") || "Salesperson"}
 									</Badge>
+									<img src="/logo.jpg" alt="Logo" className="h-8 w-8 rounded-lg object-contain" />
 									<span className="font-bold text-lg tracking-tight">
 										Evaluna ERP
 									</span>
