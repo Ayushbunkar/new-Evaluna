@@ -198,6 +198,9 @@ export function SaleCompletionScreen({
 					/* Remove fixed pixel column widths - let table auto-size */
 					.w-12, .w-20, .w-24, .w-28, .w-48 { width: auto !important; }
 
+					/* Keep the invoice logo at a fixed size (must beat the .w-12 auto rule) */
+					.invoice-logo { width: 48px !important; height: 48px !important; min-width: 48px !important; object-fit: cover !important; border-radius: 6px !important; flex-shrink: 0 !important; }
+
 					/* ── Spacing ── */
 					.mb-1 { margin-bottom: 4px !important; }
 					.mb-2 { margin-bottom: 8px !important; }
@@ -994,7 +997,7 @@ export function SaleCompletionScreen({
 												{/* Header */}
 												<div className="flex justify-between items-start mb-6">
 													<div className="flex items-center gap-3">
-														<img src="/logo.jpg" alt={STORE.name} className="h-12 w-12 rounded-lg object-cover shrink-0" />
+														<img src="/logo.jpg" alt={STORE.name} className="invoice-logo h-12 w-12 rounded-lg object-cover shrink-0" />
 														<div>
 															<h1 className="text-2xl font-black text-blue-900 tracking-tight">{STORE.name}</h1>
 															<p className="text-slate-500 text-xs mt-0.5">{STORE.address}</p>
