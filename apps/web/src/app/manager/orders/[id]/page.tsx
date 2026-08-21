@@ -33,7 +33,8 @@ export default function OrderDetailPage({
 }: {
 	params: Promise<{ id: string }>;
 }) {
-	const { id } = use(params);
+	const resolvedParams = params && typeof (params as any).then === "function" ? use(params) : (params as any);
+	const { id } = resolvedParams;
 	const orderId = Number.parseInt(id, 10);
 	const trpc = useTRPC();
 	const { data: order, isLoading } = trpc.orders.get.useQuery({
