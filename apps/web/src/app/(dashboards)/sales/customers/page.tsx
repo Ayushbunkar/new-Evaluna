@@ -46,7 +46,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod/v4";
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog";
-import { PageTransition } from "@/lib/animations";
+import { PageTransition } from "../../../../lib/animations";
 import { useTRPC } from "@/lib/trpc/client";
 import type { RouterOutputs } from "@/lib/trpc/router";
 
@@ -190,7 +190,7 @@ export default function CustomersPage() {
 		},
 	});
 
-	const updateMutation = trpc.customers.update.useMutation({
+	const updateMutation = trpc.customers.useMutation({
 		onSuccess: () => {
 			utils.customers.list.invalidate();
 			toast.success(t("updated"));
@@ -324,7 +324,7 @@ export default function CustomersPage() {
 							<Skeleton className="h-4 w-24" />
 							<Skeleton className="h-4 w-16" />
 							<Skeleton className="h-8 w-20" />
-						}
+						</div>
 					))}
 				</CardContent>
 			</Card>
@@ -340,10 +340,8 @@ export default function CustomersPage() {
 			</Card>
 		)
 	}
-
 	return (
-		<PageTransition>
-			<Card className="flex flex-col gap-4 p-3 sm:gap-6 sm:p-6">
+		<Card className="flex flex-col gap-4 p-3 sm:gap-6 sm:p-6">
 				<CardHeader className="p-0">
 					<SearchFilter
 						search={searchTerm}
@@ -413,8 +411,8 @@ export default function CustomersPage() {
 													}
 												/>
 											</div>
-										}
-									)}
+										)}
+									)</form.Field>
 								</form.Field>
 								<form.Field name="email">
 									{(field) => (
@@ -435,50 +433,74 @@ export default function CustomersPage() {
 													}
 												/>
 											</div>
-										}
-									)}
+										)}
+									)</form.Field>
 								</form.Field>
 								<form.Field name="phone">
 									{(field) => (
 										<div className="flex flex-col gap-2 sm:grid sm:grid-cols-4 sm:items-center sm:gap-4">
 											<Label htmlFor="phone">{tc("phone")}</Label>
-											<Input
-												id="phone"
-												value={field.state.value}
-												onChange={(e) => field.handleChange(e.target.value)}
-												onBlur={field.handleBlur}
-												className="col-span-3"
-											/>
-										}
-									)}
+											<div className="col-span-3">
+												<Input
+													id="phone"
+													value={field.state.value}
+													onChange={(e) => field.handleChange(e.target.value)}
+													onBlur={field.handleBlur}
+													error={
+														field.state.meta.errors.length > 0
+															? field.state.meta.errors
+																	.map((e) => e?.message ?? e)
+																	.join(", ")
+															: undefined
+													}
+												/>
+											</div>
+										)}
+									)</form.Field>
 								</form.Field>
 								<form.Field name="address">
 									{(field) => (
 										<div className="flex flex-col gap-2 sm:grid sm:grid-cols-4 sm:items-center sm:gap-4">
 											<Label htmlFor="address">Address</Label>
-											<Input
-												id="address"
-												value={field.state.value}
-												onChange={(e) => field.handleChange(e.target.value)}
-												onBlur={field.handleBlur}
-												className="col-span-3"
-											/>
-										}
-									)}
+											<div className="col-span-3">
+												<Input
+													id="address"
+													value={field.state.value}
+													onChange={(e) => field.handleChange(e.target.value)}
+													onBlur={field.handleBlur}
+													error={
+														field.state.meta.errors.length > 0
+															? field.state.meta.errors
+																	.map((e) => e?.message ?? e)
+																	.join(", ")
+															: undefined
+													}
+												/>
+											</div>
+										)}
+									)</form.Field>
 								</form.Field>
 								<form.Field name="village">
 									{(field) => (
 										<div className="flex flex-col gap-2 sm:grid sm:grid-cols-4 sm:items-center sm:gap-4">
 											<Label htmlFor="village">Village</Label>
-											<Input
-												id="village"
-												value={field.state.value}
-												onChange={(e) => field.handleChange(e.target.value)}
-												onBlur={field.handleBlur}
-												className="col-span-3"
-											/>
-										}
-									)}
+											<div className="col-span-3">
+												<Input
+													id="village"
+													value={field.state.value}
+													onChange={(e) => field.handleChange(e.target.value)}
+													onBlur={field.handleBlur}
+													error={
+														field.state.meta.errors.length > 0
+															? field.state.meta.errors
+																	.map((e) => e?.message ?? e)
+																	.join(", ")
+															: undefined
+													}
+												/>
+											</div>
+										)}
+									)</form.Field>
 								</form.Field>
 								<form.Field name="status">
 									{(field) => (
@@ -500,19 +522,22 @@ export default function CustomersPage() {
 													</SelectContent>
 												</Select>
 											</div>
-										}
+										)
 									)}
 								</div>
-								<DialogFooter>
-									<Button
-										variant="secondary"
-										onClick={() => setIsDialogOpen(false)}
-									>
-										{tc("cancel")}
-									</Button>
-									<form.Subscribe selector={(state) => state.isSubmitting}>
-										{(isSubmitting) => (
-											<Button
+							</div>
+						</form>
+					</DialogContent>
+					<DialogFooter>
+						<Button
+							variant="secondary"
+							onClick={() => setIsDialogOpen(false)}
+						>
+							{tc("cancel")}
+						</Button>
+						<form.Subscribe selector={(state) => state.isSubmitting}>
+							{(isSubmitting) => (
+								<Button
 												type="submit"
 												disabled={
 													isSubmitting ||
@@ -524,18 +549,18 @@ export default function CustomersPage() {
 											</Button>
 										)}
 									</form.Subscribe>
-								</DialogFooter>
-							</form>
-						</DialogContent>
-					</Dialog>
+							)}
+						</form.Subscribe>
+					</DialogFooter>
+				</Dialog>
 
-					<DeleteConfirmationDialog
-						isOpen={isDeleteOpen}
-						onOpenChange={setIsDeleteOpen}
-						onConfirm={handleDelete}
-						isDeleting={deleteMutation.isPending}
-					/>
-				</Card>
-			</PageTransition>
-		);
+				<DeleteConfirmationDialog
+					isOpen={isDeleteOpen}
+					onOpenChange={setIsDeleteOpen}
+					onConfirm={handleDelete}
+					isDeleting={deleteMutation.isPending}
+				/>
+			</Card>
+		</div>
+	);
 }
