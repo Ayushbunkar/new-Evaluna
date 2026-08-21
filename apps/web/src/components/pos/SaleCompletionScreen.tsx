@@ -329,7 +329,15 @@ export function SaleCompletionScreen({
 								window.print();
 								window.close();
 							}, 200);
-					const generateInvoicePdfBlob = async () => {
+						};
+					</script>
+				</body>
+			</html>
+		`);
+		printWindow.document.close();
+	};
+
+	const generateInvoicePdfBlob = async () => {
 		const { pdf, Document, Page, Text, View, StyleSheet, Font } = await import("@react-pdf/renderer");
 
 		try {
