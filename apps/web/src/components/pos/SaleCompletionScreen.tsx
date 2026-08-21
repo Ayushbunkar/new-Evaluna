@@ -337,7 +337,7 @@ export function SaleCompletionScreen({
 		printWindow.document.close();
 	};
 
-	const generateInvoicePdfBlob = async () => {
+	const generateInvoicePdfBlob = async (overridePageSize?: "A4" | "80mm") => {
 		const { pdf, Document, Page, Text, View, StyleSheet, Font } = await import("@react-pdf/renderer");
 
 		try {
@@ -349,132 +349,237 @@ export function SaleCompletionScreen({
 			console.warn("Font registration failed, using fallback.", e);
 		}
 
-		const isA4 = pageSize === "A4";
-		const calculatedHeight = pageSize === "80mm"
+		const activePageSize = overridePageSize || pageSize;
+		const isA4 = activePageSize === "A4";
+		const calculatedHeight = activePageSize === "80mm"
 			? Math.max(140, 110 + order.items.length * 12 + (order.customerName ? 20 : 0) + order.payments.length * 5)
 			: 297;
 
 		const styles = StyleSheet.create({
 			page: {
 				fontFamily: "NotoSansDevanagari",
-				padding: isA4 ? 40 : 10,
-				fontSize: isA4 ? 12 : 9,
+				padding: isA4 ? 30 : 10,
+				fontSize: isA4 ? 11 : 9,
 				backgroundColor: "#ffffff",
+				color: "#1e293b",
+			},
+			topBar: {
+				height: 6,
+				backgroundColor: "#1e40af",
+				marginBottom: 20,
 			},
 			header: {
-				textAlign: "center",
-				marginBottom: 10,
+				flexDirection: isA4 ? "row" : "column",
+				justifyContent: "space-between",
+				alignItems: isA4 ? "flex-start" : "center",
+				marginBottom: 15,
+			},
+			storeInfo: {
+				textAlign: isA4 ? "left" : "center",
+			},
+			invoiceMeta: {
+				textAlign: isA4 ? "right" : "center",
+				marginTop: isA4 ? 0 : 6,
 			},
 			title: {
-				fontSize: isA4 ? 16 : 12,
+				fontSize: isA4 ? 20 : 12,
 				fontWeight: "bold",
+				color: isA4 ? "#1e3a8a" : "#000000",
+				marginBottom: 4,
+			},
+			metaTitle: {
+				fontSize: isA4 ? 14 : 10,
+				fontWeight: "bold",
+				color: isA4 ? "#1e40af" : "#000000",
 				marginBottom: 4,
 			},
 			subtitle: {
-				fontSize: isA4 ? 10 : 8,
+				fontSize: isA4 ? 9 : 8,
+				color: "#64748b",
 				marginBottom: 2,
 			},
 			separator: {
 				borderBottomWidth: 1,
 				borderBottomStyle: "dashed",
-				borderBottomColor: "#000",
-				marginVertical: 6,
+				borderBottomColor: isA4 ? "#cbd5e1" : "#000000",
+				marginVertical: 10,
+			},
+			cardsContainer: {
+				flexDirection: "row",
+				gap: 15,
+				marginBottom: 15,
+			},
+			card: {
+				flex: 1,
+				backgroundColor: "#f8fafc",
+				borderWidth: 1,
+				borderColor: "#e2e8f0",
+				borderRadius: 6,
+				padding: 10,
+			},
+			cardTitle: {
+				fontSize: 9,
+				fontWeight: "bold",
+				color: "#1e40af",
+				textTransform: "uppercase",
+				marginBottom: 6,
+				borderBottomWidth: 1,
+				borderBottomColor: "#e2e8f0",
+				paddingBottom: 2,
 			},
 			row: {
 				flexDirection: "row",
 				justifyContent: "space-between",
-				marginBottom: 4,
+				marginBottom: 3,
 			},
 			bold: {
 				fontWeight: "bold",
 			},
 			tableHeader: {
 				flexDirection: "row",
-				borderBottomWidth: 1,
+				backgroundColor: isA4 ? "#1e40af" : "transparent",
+				borderBottomWidth: isA4 ? 0 : 1,
 				borderBottomStyle: "dashed",
-				borderBottomColor: "#000",
-				paddingBottom: 4,
+				borderBottomColor: "#000000",
+				padding: isA4 ? 6 : 4,
 				marginBottom: 4,
 			},
 			tableRow: {
 				flexDirection: "row",
-				marginBottom: 4,
+				borderBottomWidth: 1,
+				borderBottomColor: isA4 ? "#f1f5f9" : "transparent",
+				paddingVertical: isA4 ? 5 : 2,
+				marginBottom: 2,
 			},
 			colItem: { flex: isA4 ? 4 : 3 },
 			colQty: { flex: 1, textAlign: "right" },
 			colRate: { flex: 2, textAlign: "right" },
 			colTotal: { flex: 2, textAlign: "right" },
+			thText: {
+				color: isA4 ? "#ffffff" : "#000000",
+				fontWeight: "bold",
+			},
+			summaryContainer: {
+				flexDirection: "row",
+				justifyContent: "flex-end",
+				marginTop: 10,
+			},
+			summaryBlock: {
+				width: isA4 ? 180 : "100%",
+			},
 			footer: {
 				textAlign: "center",
-				marginTop: 10,
-				fontSize: isA4 ? 10 : 7.5,
+				marginTop: 20,
+				fontSize: isA4 ? 9 : 7.5,
+				color: "#64748b",
 			}
 		});
 
 		const InvoiceDocument = () => (
 			<Document>
 				<Page 
-					size={pageSize === "80mm" ? [226.77, calculatedHeight * 2.834] : "A4"} 
+					size={activePageSize === "80mm" ? [226.77, calculatedHeight * 2.834] : "A4"} 
 					style={styles.page}
 				>
+					{isA4 && <View style={styles.topBar} />}
+
 					{/* Header */}
 					<View style={styles.header}>
-						<Text style={styles.title}>{STORE.name}</Text>
-						<Text style={styles.subtitle}>{STORE.address}</Text>
-						<Text style={styles.subtitle}>{STORE.city}</Text>
-						<Text style={styles.subtitle}>Phone: {STORE.phone}</Text>
+						<View style={styles.storeInfo}>
+							<Text style={styles.title}>{STORE.name}</Text>
+							<Text style={styles.subtitle}>{STORE.address}</Text>
+							<Text style={styles.subtitle}>{STORE.city}</Text>
+							<Text style={styles.subtitle}>Phone: {STORE.phone}</Text>
+						</View>
+						<View style={styles.invoiceMeta}>
+							<Text style={styles.metaTitle}>INVOICE</Text>
+							<Text style={styles.subtitle}>Invoice #: {order.id}</Text>
+							<Text style={styles.subtitle}>Date: {formattedDate}</Text>
+							<Text style={styles.subtitle}>Cashier: {order.cashierName || "Counter 1"}</Text>
+						</View>
 					</View>
 
-					<View style={styles.separator} />
-
-					{/* Invoice Meta */}
-					<View style={styles.row}>
-						<Text>Invoice No:</Text>
-						<Text>#{order.id}</Text>
-					</View>
-					<View style={styles.row}>
-						<Text>Date & Time:</Text>
-						<Text>{formattedDate}</Text>
-					</View>
-					<View style={styles.row}>
-						<Text>Cashier:</Text>
-						<Text>{order.cashierName || "Counter 1"}</Text>
-					</View>
-
-					{/* Customer Details */}
-					{(order.customerName || order.customerPhone || order.shopName) && (
+					{isA4 ? (
+						<View style={styles.cardsContainer}>
+							<View style={styles.card}>
+								<Text style={styles.cardTitle}>Customer Details</Text>
+								{order.customerName || order.customerPhone || order.shopName ? (
+									<>
+										{order.customerName && <Text style={[styles.bold, { fontSize: 10, marginBottom: 2 }]}>{order.customerName}</Text>}
+										{order.shopName && <Text style={styles.subtitle}>Shop: {order.shopName}</Text>}
+										{order.customerPhone && <Text style={styles.subtitle}>Phone: {order.customerPhone}</Text>}
+										{order.village && <Text style={styles.subtitle}>Village: {order.village}</Text>}
+										{order.address && <Text style={styles.subtitle}>Address: {order.address}</Text>}
+									</>
+								) : (
+									<Text style={[styles.subtitle, { italic: true }]}>Walk-in Customer</Text>
+								)}
+							</View>
+							<View style={styles.card}>
+								<Text style={styles.cardTitle}>Payment Details</Text>
+								<View style={styles.row}>
+									<Text style={styles.subtitle}>Status:</Text>
+									<Text style={[styles.bold, { fontSize: 10, color: status.label === "PAID" ? "#16a34a" : "#ca8a04" }]}>{status.label}</Text>
+								</View>
+								<View style={styles.row}>
+									<Text style={styles.subtitle}>Method:</Text>
+									<Text style={styles.subtitle}>
+										{order.payments.map((p) => PAYMENT_METHOD_LABELS[p.methodId] ?? "Payment").join(", ")}
+									</Text>
+								</View>
+							</View>
+						</View>
+					) : (
 						<>
 							<View style={styles.separator} />
-							<Text style={[styles.bold, { marginBottom: 4 }]}>BILL TO:</Text>
-							{order.customerName && (
-								<View style={styles.row}>
-									<Text>Name:</Text>
-									<Text>{order.customerName}</Text>
-								</View>
-							)}
-							{order.shopName && (
-								<View style={styles.row}>
-									<Text>Shop:</Text>
-									<Text>{order.shopName}</Text>
-								</View>
-							)}
-							{order.customerPhone && (
-								<View style={styles.row}>
-									<Text>Phone:</Text>
-									<Text>{order.customerPhone}</Text>
-								</View>
-							)}
-							{order.village && (
-								<View style={styles.row}>
-									<Text>Village:</Text>
-									<Text>{order.village}</Text>
-								</View>
-							)}
-							{order.address && (
-								<View style={styles.row}>
-									<Text>Address:</Text>
-									<Text>{order.address}</Text>
-								</View>
+							<View style={styles.row}>
+								<Text>Invoice No:</Text>
+								<Text>#{order.id}</Text>
+							</View>
+							<View style={styles.row}>
+								<Text>Date & Time:</Text>
+								<Text>{formattedDate}</Text>
+							</View>
+							<View style={styles.row}>
+								<Text>Cashier:</Text>
+								<Text>{order.cashierName || "Counter 1"}</Text>
+							</View>
+
+							{(order.customerName || order.customerPhone || order.shopName) && (
+								<>
+									<View style={styles.separator} />
+									<Text style={[styles.bold, { marginBottom: 4 }]}>BILL TO:</Text>
+									{order.customerName && (
+										<View style={styles.row}>
+											<Text>Name:</Text>
+											<Text>{order.customerName}</Text>
+										</View>
+									)}
+									{order.shopName && (
+										<View style={styles.row}>
+											<Text>Shop:</Text>
+											<Text>{order.shopName}</Text>
+										</View>
+									)}
+									{order.customerPhone && (
+										<View style={styles.row}>
+											<Text>Phone:</Text>
+											<Text>{order.customerPhone}</Text>
+										</View>
+									)}
+									{order.village && (
+										<View style={styles.row}>
+											<Text>Village:</Text>
+											<Text>{order.village}</Text>
+										</View>
+									)}
+									{order.address && (
+										<View style={styles.row}>
+											<Text>Address:</Text>
+											<Text>{order.address}</Text>
+										</View>
+									)}
+								</>
 							)}
 						</>
 					)}
@@ -483,10 +588,10 @@ export function SaleCompletionScreen({
 
 					{/* Table Header */}
 					<View style={styles.tableHeader}>
-						<Text style={[styles.colItem, styles.bold]}>Item</Text>
-						<Text style={[styles.colQty, styles.bold]}>Qty</Text>
-						<Text style={[styles.colRate, styles.bold]}>Rate</Text>
-						<Text style={[styles.colTotal, styles.bold]}>Total</Text>
+						<Text style={[styles.colItem, styles.thText]}>Item</Text>
+						<Text style={[styles.colQty, styles.thText]}>Qty</Text>
+						<Text style={[styles.colRate, styles.thText]}>Rate</Text>
+						<Text style={[styles.colTotal, styles.thText]}>Total</Text>
 					</View>
 
 					{/* Table Items */}
@@ -507,35 +612,35 @@ export function SaleCompletionScreen({
 					<View style={styles.separator} />
 
 					{/* Summary */}
-					<View style={styles.row}>
-						<Text>Subtotal:</Text>
-						<Text>Rs.{order.subtotal.toFixed(2)}</Text>
-					</View>
-					{order.discount > 0 && (
-						<View style={styles.row}>
-							<Text>Discount:</Text>
-							<Text>-Rs.{order.discount.toFixed(2)}</Text>
+					<View style={styles.summaryContainer}>
+						<View style={styles.summaryBlock}>
+							<View style={styles.row}>
+								<Text style={styles.subtitle}>Subtotal:</Text>
+								<Text style={styles.subtitle}>Rs.{order.subtotal.toFixed(2)}</Text>
+							</View>
+							{order.discount > 0 && (
+								<View style={styles.row}>
+									<Text style={styles.subtitle}>Discount:</Text>
+									<Text style={styles.subtitle}>-Rs.{order.discount.toFixed(2)}</Text>
+								</View>
+							)}
+							{roundOff !== 0 && (
+								<View style={styles.row}>
+									<Text style={styles.subtitle}>Round-off:</Text>
+									<Text style={styles.subtitle}>{roundOff > 0 ? "+" : ""}Rs.{roundOff.toFixed(2)}</Text>
+								</View>
+							)}
+							<View style={[styles.row, { marginTop: 6, paddingTop: 4, borderTopWidth: 1, borderTopColor: "#cbd5e1" }]}>
+								<Text style={[styles.bold, { fontSize: isA4 ? 12 : 10 }]}>Grand Total:</Text>
+								<Text style={[styles.bold, { fontSize: isA4 ? 12 : 10 }]}>Rs.{grandTotal.toFixed(2)}</Text>
+							</View>
 						</View>
-					)}
-					{roundOff !== 0 && (
-						<View style={styles.row}>
-							<Text>Round-off:</Text>
-							<Text>{roundOff > 0 ? "+" : ""}Rs.{roundOff.toFixed(2)}</Text>
-						</View>
-					)}
-
-					<View style={styles.separator} />
-					<View style={styles.row}>
-						<Text style={[styles.bold, { fontSize: isA4 ? 14 : 11 }]}>Grand Total:</Text>
-						<Text style={[styles.bold, { fontSize: isA4 ? 14 : 11 }]}>Rs.{grandTotal.toFixed(2)}</Text>
 					</View>
-					<View style={styles.separator} />
 
 					{/* Footer */}
 					<View style={styles.footer}>
-						<Text style={[styles.bold, { marginBottom: 2, fontSize: isA4 ? 12 : 9 }]}>Thank you for shopping!</Text>
-						<Text>Goods once sold will not be taken back</Text>
-						<Text>without valid receipt within 7 days</Text>
+						<Text style={[styles.bold, { marginBottom: 2, fontSize: isA4 ? 10 : 8, color: "#1e3a8a" }]}>Thank you for shopping!</Text>
+						<Text>Goods once sold will not be taken back without valid receipt within 7 days</Text>
 					</View>
 				</Page>
 			</Document>
@@ -547,7 +652,7 @@ export function SaleCompletionScreen({
 	const handleDownloadPDF = async () => {
 		const toastId = toast.loading("Generating vector PDF...");
 		try {
-			const blob = await generateInvoicePdfBlob();
+			const blob = await generateInvoicePdfBlob(pageSize);
 			const url = URL.createObjectURL(blob);
 			const link = document.createElement('a');
 			link.href = url;
@@ -567,7 +672,7 @@ export function SaleCompletionScreen({
 	const handleWhatsApp = async () => {
 		const toastId = toast.loading("Preparing PDF for WhatsApp...");
 		try {
-			const blob = await generateInvoicePdfBlob();
+			const blob = await generateInvoicePdfBlob("A4");
 			const fileName = `Invoice-${order.id}.pdf`;
 			const file = new File([blob], fileName, { type: "application/pdf" });
 
