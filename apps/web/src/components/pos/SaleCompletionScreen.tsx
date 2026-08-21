@@ -827,7 +827,7 @@ export function SaleCompletionScreen({
 				initial={{ opacity: 0 }}
 				animate={{ opacity: 1 }}
 				exit={{ opacity: 0 }}
-				className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+				className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-2 backdrop-blur-sm sm:p-4"
 			>
 				{/* Global style overrides for printing */}
 				<style dangerouslySetInnerHTML={{ __html: `
@@ -892,10 +892,10 @@ export function SaleCompletionScreen({
 					animate={{ scale: 1, opacity: 1, y: 0 }}
 					exit={{ scale: 0.92, opacity: 0 }}
 					transition={{ type: "spring", damping: 22, stiffness: 300 }}
-					className="flex max-h-[95vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+					className="flex h-[96vh] w-full max-w-5xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl sm:h-auto sm:max-h-[95vh] sm:rounded-2xl"
 				>
 					{/* ── Screen Control Bar (Hidden on Print) ── */}
-					<div className="flex shrink-0 flex-col sm:flex-row gap-4 items-center justify-between bg-blue-900 px-6 py-4 text-white print:hidden">
+					<div className="flex shrink-0 flex-col sm:flex-row gap-3 sm:gap-4 items-center justify-between bg-blue-900 px-4 py-3 sm:px-6 sm:py-4 text-white print:hidden">
 						<div className="flex items-center gap-3 w-full sm:w-auto">
 							<div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-800 text-white shadow-inner">
 								<IndianRupee className="h-5 w-5 text-blue-200" />
@@ -967,9 +967,9 @@ export function SaleCompletionScreen({
 						</div>
 					</div>
 
-					<div className="flex min-h-0 flex-1 flex-col md:flex-row overflow-hidden">
+					<div className="flex min-h-0 flex-1 flex-col md:flex-row overflow-y-auto md:overflow-hidden">
 						{/* ── Center-Aligned Interactive Preview Canvas ── */}
-						<div className="flex min-h-0 flex-1 bg-slate-100 overflow-auto p-6 print:p-0 print:bg-white">
+						<div className="flex min-h-0 h-[45vh] shrink-0 bg-slate-100 overflow-auto p-3 sm:p-6 md:h-auto md:flex-1 md:shrink print:p-0 print:bg-white">
 							<div className="m-auto flex min-h-full min-w-max items-center justify-center print:m-0 print:block">
 								<motion.div
 									id="printable-receipt"
@@ -1233,7 +1233,7 @@ export function SaleCompletionScreen({
 						</div>
 
 						{/* ── Right Actions Panel ── */}
-						<div className="flex w-full md:w-64 shrink-0 flex-col gap-3 bg-slate-50 p-4 border-t md:border-t-0 md:border-l border-slate-200 print:hidden overflow-y-auto">
+						<div className="flex w-full md:w-64 shrink-0 flex-col gap-3 bg-slate-50 p-4 border-t md:border-t-0 md:border-l border-slate-200 print:hidden md:overflow-y-auto">
 							<div className="mb-1 font-bold text-slate-400 text-xs uppercase tracking-wider">
 								Actions
 							</div>
@@ -1334,11 +1334,11 @@ export function SaleCompletionScreen({
 					</div>
 
 					{/* ── Bottom Info Bar ── */}
-					<div className="flex shrink-0 items-center justify-between border-t border-slate-200 bg-slate-50 px-6 py-3 text-slate-400 text-xs print:hidden">
+					<div className="flex shrink-0 flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-slate-200 bg-slate-50 px-4 py-2 text-slate-400 text-[10px] sm:px-6 sm:py-3 sm:text-xs print:hidden">
 						<span>
 							Invoice #{order.id} • {formattedDate}
 						</span>
-						<div className="flex items-center gap-2">
+						<div className="flex flex-wrap items-center gap-x-2 gap-y-1">
 							<span className="inline-flex items-center gap-1">
 								<span className="inline-block h-1.5 w-1.5 rounded-full bg-green-500" />
 								Stock updated

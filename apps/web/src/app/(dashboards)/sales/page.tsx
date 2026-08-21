@@ -104,12 +104,12 @@ export default function SalesDashboard() {
 							className="group cursor-pointer border-border/50 bg-card/80 shadow-sm backdrop-blur-xl transition-all hover:shadow-md"
 							onClick={() => (window.location.href = "/sales/orders")}
 						>
-							<CardContent className="p-6">
-								<div className="flex flex-col items-center gap-2 text-center">
-									<div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-blue-500/10 transition-transform group-hover:scale-110">
+							<CardContent className="p-4 sm:p-6">
+								<div className="flex flex-col items-center gap-1 text-center sm:gap-2">
+									<div className="mb-1 flex h-10 w-10 items-center justify-center rounded-full bg-blue-500/10 transition-transform group-hover:scale-110 sm:mb-2 sm:h-12 sm:w-12">
 										<ReceiptTextIcon className="h-6 w-6 text-blue-500" />
 									</div>
-									<h3 className="font-semibold text-lg">Orders</h3>
+									<h3 className="font-semibold text-base sm:text-lg">Orders</h3>
 									<p className="text-muted-foreground text-xs">
 										View past receipts
 									</p>
@@ -125,12 +125,12 @@ export default function SalesDashboard() {
 							className="group cursor-pointer border-border/50 bg-card/80 shadow-sm backdrop-blur-xl transition-all hover:shadow-md"
 							onClick={() => (window.location.href = "/sales/customers")}
 						>
-							<CardContent className="p-6">
-								<div className="flex flex-col items-center gap-2 text-center">
-									<div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-orange-500/10 transition-transform group-hover:scale-110">
+							<CardContent className="p-4 sm:p-6">
+								<div className="flex flex-col items-center gap-1 text-center sm:gap-2">
+									<div className="mb-1 flex h-10 w-10 items-center justify-center rounded-full bg-orange-500/10 transition-transform group-hover:scale-110 sm:mb-2 sm:h-12 sm:w-12">
 										<UsersIcon className="h-6 w-6 text-orange-500" />
 									</div>
-									<h3 className="font-semibold text-lg">Customers</h3>
+									<h3 className="font-semibold text-base sm:text-lg">Customers</h3>
 									<p className="text-muted-foreground text-xs">
 										Manage loyalty and profiles
 									</p>
@@ -146,12 +146,12 @@ export default function SalesDashboard() {
 							className="group cursor-pointer border-border/50 bg-card/80 shadow-sm backdrop-blur-xl transition-all hover:shadow-md"
 							onClick={() => (window.location.href = "/sales/cashbook")}
 						>
-							<CardContent className="p-6">
-								<div className="flex flex-col items-center gap-2 text-center">
-									<div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10 transition-transform group-hover:scale-110">
+							<CardContent className="p-4 sm:p-6">
+								<div className="flex flex-col items-center gap-1 text-center sm:gap-2">
+									<div className="mb-1 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10 transition-transform group-hover:scale-110 sm:mb-2 sm:h-12 sm:w-12">
 										<BanknoteIcon className="h-6 w-6 text-emerald-500" />
 									</div>
-									<h3 className="font-semibold text-lg">Daily Till</h3>
+									<h3 className="font-semibold text-base sm:text-lg">Daily Till</h3>
 									<p className="text-muted-foreground text-xs">
 										Cash drawer operations
 									</p>

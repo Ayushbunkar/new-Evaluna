@@ -11,6 +11,7 @@ import {
 	Trash2,
 	Wifi,
 	WifiOff,
+	X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -44,6 +45,7 @@ export default function POSPage() {
 	// shows UNPAID and no payment is recorded.
 	const isSalesPerson = session?.user?.role === "sales_person";
 	const [cart, setCart] = useState<any[]>([]);
+	const [mobileCartOpen, setMobileCartOpen] = useState(false);
 	const [search, setSearch] = useState("");
 	const [isOffline, setIsOffline] = useState(false);
 	const [paymentModalOpen, setPaymentModalOpen] = useState(false);
@@ -355,11 +357,11 @@ export default function POSPage() {
 	});
 
 	return (
-		<PageTransition className="flex h-[calc(100vh-64px)] overflow-hidden bg-muted/40">
+		<PageTransition className="relative flex h-[calc(100vh-64px)] overflow-hidden bg-muted/40">
 			{/* Left Pane - Catalog */}
-			<div className="flex min-h-0 flex-1 flex-col border-r p-4">
+			<div className="flex min-h-0 flex-1 flex-col border-r p-3 pb-20 sm:p-4 lg:pb-4">
 				<div className="mb-4 flex shrink-0 items-center justify-between">
-					<h1 className="font-bold text-2xl">Point of Sale</h1>
+					<h1 className="font-bold text-xl sm:text-2xl">Point of Sale</h1>
 					<div className="flex items-center gap-2">
 						{isOffline ? (
 							<span className="flex items-center gap-2 font-semibold text-destructive">
@@ -442,20 +444,63 @@ export default function POSPage() {
 				</ScrollArea>
 			</div>
 
+			{/* Mobile floating cart summary bar */}
+			<button
+				type="button"
+				onClick={() => setMobileCartOpen(true)}
+				className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-between gap-3 border-t bg-background px-4 py-3 shadow-[0_-2px_12px_rgba(0,0,0,0.08)] lg:hidden"
+			>
+				<span className="flex items-center gap-2 font-semibold text-sm">
+					<ShoppingCart className="h-5 w-5" />
+					{cart.reduce((n, i) => n + i.qty, 0)} item{cart.reduce((n, i) => n + i.qty, 0) === 1 ? "" : "s"}
+				</span>
+				<span className="flex items-center gap-3">
+					<span className="font-bold text-lg">₹{total.toFixed(2)}</span>
+					<span className="rounded-md bg-primary px-3 py-1.5 font-semibold text-primary-foreground text-sm">
+						View Cart
+					</span>
+				</span>
+			</button>
+
+			{/* Mobile overlay backdrop */}
+			{mobileCartOpen && (
+				<button
+					type="button"
+					aria-label="Close cart"
+					onClick={() => setMobileCartOpen(false)}
+					className="fixed inset-0 top-16 z-30 bg-black/40 lg:hidden"
+				/>
+			)}
+
 			{/* Right Pane - Cart */}
-			<div className="z-10 flex min-h-0 w-[350px] shrink-0 flex-col bg-background p-4 shadow-xl lg:w-[400px]">
+			<div
+				className={`z-40 flex min-h-0 shrink-0 flex-col bg-background p-4 shadow-xl transition-transform duration-300 lg:z-10 lg:w-[350px] lg:translate-y-0 xl:w-[400px] max-lg:fixed max-lg:inset-x-0 max-lg:bottom-0 max-lg:top-24 max-lg:rounded-t-2xl ${
+					mobileCartOpen ? "max-lg:translate-y-0" : "max-lg:translate-y-full"
+				}`}
+			>
 				<div className="mb-4 flex shrink-0 items-center justify-between">
 					<h2 className="flex items-center gap-2 font-bold text-xl">
 						<ShoppingCart className="h-5 w-5" /> Current Order
 					</h2>
-					<Button
-						variant="ghost"
-						size="sm"
-						onClick={() => setCart([])}
-						disabled={cart.length === 0 || checkoutMutation.isPending}
-					>
-						Clear
-					</Button>
+					<div className="flex items-center gap-1">
+						<Button
+							variant="ghost"
+							size="sm"
+							onClick={() => setCart([])}
+							disabled={cart.length === 0 || checkoutMutation.isPending}
+						>
+							Clear
+						</Button>
+						<Button
+							variant="ghost"
+							size="icon"
+							className="lg:hidden"
+							onClick={() => setMobileCartOpen(false)}
+							aria-label="Close cart"
+						>
+							<X className="h-5 w-5" />
+						</Button>
+					</div>
 				</div>
 				<ScrollArea className="min-h-0 flex-1 bg-muted/20 p-4 scroll-area-vertical">
 					<AnimatePresence>
