@@ -10,7 +10,7 @@ import {
 	Mail,
 	MessageCircle,
 	Printer,
-	Receipt,
+	IndianRupee,
 	RotateCcw,
 	ShoppingBag,
 	Store,
@@ -506,7 +506,7 @@ export function SaleCompletionScreen({
 					size={activePageSize === "80mm" ? [226.77, calculatedHeight * 2.834] : "A4"} 
 					style={styles.page}
 				>
-					{isA4 && <View style={styles.topBar} />}
+					{isA4 ? <View style={styles.topBar} /> : null}
 
 					{/* Header */}
 					<View style={styles.header}>
@@ -530,14 +530,14 @@ export function SaleCompletionScreen({
 								<Text style={styles.cardTitle}>Customer Details</Text>
 								{order.customerName || order.customerPhone || order.shopName ? (
 									<>
-										{order.customerName && <Text style={[styles.bold, { fontSize: 10, marginBottom: 2 }]}>{order.customerName}</Text>}
-										{order.shopName && <Text style={styles.subtitle}>Shop: {order.shopName}</Text>}
-										{order.customerPhone && <Text style={styles.subtitle}>Phone: {order.customerPhone}</Text>}
-										{order.village && <Text style={styles.subtitle}>Village: {order.village}</Text>}
-										{order.address && <Text style={styles.subtitle}>Address: {order.address}</Text>}
+										{order.customerName ? <Text style={[styles.bold, { fontSize: 10, marginBottom: 2 }]}>{order.customerName}</Text> : null}
+										{order.shopName ? <Text style={styles.subtitle}>Shop: {order.shopName}</Text> : null}
+										{order.customerPhone ? <Text style={styles.subtitle}>Phone: {order.customerPhone}</Text> : null}
+										{order.village ? <Text style={styles.subtitle}>Village: {order.village}</Text> : null}
+										{order.address ? <Text style={styles.subtitle}>Address: {order.address}</Text> : null}
 									</>
 								) : (
-									<Text style={[styles.subtitle, { italic: true }]}>Walk-in Customer</Text>
+									<Text style={[styles.subtitle, { fontStyle: "italic" }]}>Walk-in Customer</Text>
 								)}
 							</View>
 							<View style={styles.card}>
@@ -570,42 +570,42 @@ export function SaleCompletionScreen({
 								<Text>{order.cashierName || "Counter 1"}</Text>
 							</View>
 
-							{(order.customerName || order.customerPhone || order.shopName) && (
+							{(order.customerName || order.customerPhone || order.shopName) ? (
 								<>
 									<View style={styles.separator} />
 									<Text style={[styles.bold, { marginBottom: 4 }]}>BILL TO:</Text>
-									{order.customerName && (
+									{order.customerName ? (
 										<View style={styles.row}>
 											<Text>Name:</Text>
 											<Text>{order.customerName}</Text>
 										</View>
-									)}
-									{order.shopName && (
+									) : null}
+									{order.shopName ? (
 										<View style={styles.row}>
 											<Text>Shop:</Text>
 											<Text>{order.shopName}</Text>
 										</View>
-									)}
-									{order.customerPhone && (
+									) : null}
+									{order.customerPhone ? (
 										<View style={styles.row}>
 											<Text>Phone:</Text>
 											<Text>{order.customerPhone}</Text>
 										</View>
-									)}
-									{order.village && (
+									) : null}
+									{order.village ? (
 										<View style={styles.row}>
 											<Text>Village:</Text>
 											<Text>{order.village}</Text>
 										</View>
-									)}
-									{order.address && (
+									) : null}
+									{order.address ? (
 										<View style={styles.row}>
 											<Text>Address:</Text>
 											<Text>{order.address}</Text>
 										</View>
-									)}
+									) : null}
 								</>
-							)}
+							) : null}
 						</>
 					)}
 
@@ -614,12 +614,12 @@ export function SaleCompletionScreen({
 					<View style={styles.tableContainer}>
 						{/* Table Header */}
 						<View style={styles.tableHeader}>
-							{isA4 && <Text style={[styles.colNum, styles.thText]}>#</Text>}
+							{isA4 ? <Text style={[styles.colNum, styles.thText]}>#</Text> : null}
 							<Text style={[styles.colItem, styles.thText]}>Item Description</Text>
-							{isA4 && <Text style={[styles.colSku, styles.thText]}>SKU</Text>}
+							{isA4 ? <Text style={[styles.colSku, styles.thText]}>SKU</Text> : null}
 							<Text style={[styles.colQty, styles.thText]}>Qty</Text>
 							<Text style={[styles.colRate, styles.thText]}>Unit Price</Text>
-							{isA4 && <Text style={[styles.colDiscount, styles.thText]}>Discount</Text>}
+							{isA4 ? <Text style={[styles.colDiscount, styles.thText]}>Discount</Text> : null}
 							<Text style={[styles.colTotal, styles.thText]}>Total</Text>
 						</View>
 
@@ -630,14 +630,14 @@ export function SaleCompletionScreen({
 							const qtyStr = Number.isInteger(item.qty) ? item.qty.toString() : item.qty.toFixed(3);
 							return (
 								<View key={idx} style={styles.tableRow}>
-									{isA4 && <Text style={[styles.colNum, styles.tdText]}>{idx + 1}</Text>}
+									{isA4 ? <Text style={[styles.colNum, styles.tdText]}>{idx + 1}</Text> : null}
 									<View style={styles.colItem}>
 										<Text style={styles.tdText}>{item.name}</Text>
 									</View>
-									{isA4 && <Text style={[styles.colSku, styles.tdText, { fontSize: 7, color: "#94a3b8" }]}>SKU-{item.productId}</Text>}
+									{isA4 ? <Text style={[styles.colSku, styles.tdText, { fontSize: 7, color: "#94a3b8" }]}>SKU-{item.id}</Text> : null}
 									<Text style={[styles.colQty, styles.tdText, styles.bold, { color: "#000000" }]}>{qtyStr}</Text>
 									<Text style={[styles.colRate, styles.tdText]}>Rs.{rate.toFixed(2)}</Text>
-									{isA4 && <Text style={[styles.colDiscount, styles.tdText, { color: "#10b981" }]}>-</Text>}
+									{isA4 ? <Text style={[styles.colDiscount, styles.tdText, { color: "#10b981" }]}>-</Text> : null}
 									<Text style={[styles.colTotal, styles.tdText, styles.bold, { color: "#000000" }]}>Rs.{lineTotal.toFixed(2)}</Text>
 								</View>
 							);
@@ -656,18 +656,18 @@ export function SaleCompletionScreen({
 									<Text style={styles.tdText}>Subtotal:</Text>
 									<Text style={styles.tdText}>Rs.{order.subtotal.toFixed(2)}</Text>
 								</View>
-								{order.discount > 0 && (
+								{order.discount > 0 ? (
 									<View style={styles.row}>
 										<Text style={styles.tdText}>Discount:</Text>
 										<Text style={styles.tdText}>-Rs.{order.discount.toFixed(2)}</Text>
 									</View>
-								)}
-								{roundOff !== 0 && (
+								) : null}
+								{roundOff !== 0 ? (
 									<View style={styles.row}>
 										<Text style={styles.tdText}>Round-off:</Text>
 										<Text style={styles.tdText}>{roundOff > 0 ? "+" : ""}Rs.{roundOff.toFixed(2)}</Text>
 									</View>
-								)}
+								) : null}
 								<View style={[styles.row, { marginTop: 6, paddingTop: 6, borderTopWidth: 1, borderTopColor: "#e5e7eb" }]}>
 									<Text style={[styles.bold, { fontSize: 12, color: "#1d4ed8" }]}>Grand Total:</Text>
 									<Text style={[styles.bold, { fontSize: 12, color: "#1d4ed8" }]}>Rs.{grandTotal.toFixed(2)}</Text>
@@ -681,18 +681,18 @@ export function SaleCompletionScreen({
 									<Text style={styles.subtitle}>Subtotal:</Text>
 									<Text style={styles.subtitle}>Rs.{order.subtotal.toFixed(2)}</Text>
 								</View>
-								{order.discount > 0 && (
+								{order.discount > 0 ? (
 									<View style={styles.row}>
 										<Text style={styles.subtitle}>Discount:</Text>
 										<Text style={styles.subtitle}>-Rs.{order.discount.toFixed(2)}</Text>
 									</View>
-								)}
-								{roundOff !== 0 && (
+								) : null}
+								{roundOff !== 0 ? (
 									<View style={styles.row}>
 										<Text style={styles.subtitle}>Round-off:</Text>
 										<Text style={styles.subtitle}>{roundOff > 0 ? "+" : ""}Rs.{roundOff.toFixed(2)}</Text>
 									</View>
-								)}
+								) : null}
 								<View style={[styles.row, { marginTop: 6, paddingTop: 4, borderTopWidth: 1, borderTopColor: "#cbd5e1" }]}>
 									<Text style={[styles.bold, { fontSize: 10 }]}>Grand Total:</Text>
 									<Text style={[styles.bold, { fontSize: 10 }]}>Rs.{grandTotal.toFixed(2)}</Text>
@@ -896,7 +896,7 @@ export function SaleCompletionScreen({
 					<div className="flex shrink-0 flex-col sm:flex-row gap-4 items-center justify-between bg-blue-900 px-6 py-4 text-white print:hidden">
 						<div className="flex items-center gap-3 w-full sm:w-auto">
 							<div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-800 text-white shadow-inner">
-								<Receipt className="h-5 w-5 text-blue-200" />
+								<IndianRupee className="h-5 w-5 text-blue-200" />
 							</div>
 							<div>
 								<div className="font-black text-base tracking-tight leading-none">
