@@ -329,218 +329,221 @@ export function SaleCompletionScreen({
 								window.print();
 								window.close();
 							}, 200);
-						};
-					</script>
-				</body>
-			</html>
-		`);
-		printWindow.document.close();
+					const generateInvoicePdfBlob = async () => {
+		const { pdf, Document, Page, Text, View, StyleSheet, Font } = await import("@react-pdf/renderer");
+
+		try {
+			Font.register({
+				family: "NotoSansDevanagari",
+				src: `${window.location.origin}/fonts/NotoSansDevanagari-Regular.ttf`
+			});
+		} catch (e) {
+			console.warn("Font registration failed, using fallback.", e);
+		}
+
+		const isA4 = pageSize === "A4";
+		const calculatedHeight = pageSize === "80mm"
+			? Math.max(140, 110 + order.items.length * 12 + (order.customerName ? 20 : 0) + order.payments.length * 5)
+			: 297;
+
+		const styles = StyleSheet.create({
+			page: {
+				fontFamily: "NotoSansDevanagari",
+				padding: isA4 ? 40 : 10,
+				fontSize: isA4 ? 12 : 9,
+				backgroundColor: "#ffffff",
+			},
+			header: {
+				textAlign: "center",
+				marginBottom: 10,
+			},
+			title: {
+				fontSize: isA4 ? 16 : 12,
+				fontWeight: "bold",
+				marginBottom: 4,
+			},
+			subtitle: {
+				fontSize: isA4 ? 10 : 8,
+				marginBottom: 2,
+			},
+			separator: {
+				borderBottomWidth: 1,
+				borderBottomStyle: "dashed",
+				borderBottomColor: "#000",
+				marginVertical: 6,
+			},
+			row: {
+				flexDirection: "row",
+				justifyContent: "space-between",
+				marginBottom: 4,
+			},
+			bold: {
+				fontWeight: "bold",
+			},
+			tableHeader: {
+				flexDirection: "row",
+				borderBottomWidth: 1,
+				borderBottomStyle: "dashed",
+				borderBottomColor: "#000",
+				paddingBottom: 4,
+				marginBottom: 4,
+			},
+			tableRow: {
+				flexDirection: "row",
+				marginBottom: 4,
+			},
+			colItem: { flex: isA4 ? 4 : 3 },
+			colQty: { flex: 1, textAlign: "right" },
+			colRate: { flex: 2, textAlign: "right" },
+			colTotal: { flex: 2, textAlign: "right" },
+			footer: {
+				textAlign: "center",
+				marginTop: 10,
+				fontSize: isA4 ? 10 : 7.5,
+			}
+		});
+
+		const InvoiceDocument = () => (
+			<Document>
+				<Page 
+					size={pageSize === "80mm" ? [226.77, calculatedHeight * 2.834] : "A4"} 
+					style={styles.page}
+				>
+					{/* Header */}
+					<View style={styles.header}>
+						<Text style={styles.title}>{STORE.name}</Text>
+						<Text style={styles.subtitle}>{STORE.address}</Text>
+						<Text style={styles.subtitle}>{STORE.city}</Text>
+						<Text style={styles.subtitle}>Phone: {STORE.phone}</Text>
+					</View>
+
+					<View style={styles.separator} />
+
+					{/* Invoice Meta */}
+					<View style={styles.row}>
+						<Text>Invoice No:</Text>
+						<Text>#{order.id}</Text>
+					</View>
+					<View style={styles.row}>
+						<Text>Date & Time:</Text>
+						<Text>{formattedDate}</Text>
+					</View>
+					<View style={styles.row}>
+						<Text>Cashier:</Text>
+						<Text>{order.cashierName || "Counter 1"}</Text>
+					</View>
+
+					{/* Customer Details */}
+					{(order.customerName || order.customerPhone || order.shopName) && (
+						<>
+							<View style={styles.separator} />
+							<Text style={[styles.bold, { marginBottom: 4 }]}>BILL TO:</Text>
+							{order.customerName && (
+								<View style={styles.row}>
+									<Text>Name:</Text>
+									<Text>{order.customerName}</Text>
+								</View>
+							)}
+							{order.shopName && (
+								<View style={styles.row}>
+									<Text>Shop:</Text>
+									<Text>{order.shopName}</Text>
+								</View>
+							)}
+							{order.customerPhone && (
+								<View style={styles.row}>
+									<Text>Phone:</Text>
+									<Text>{order.customerPhone}</Text>
+								</View>
+							)}
+							{order.village && (
+								<View style={styles.row}>
+									<Text>Village:</Text>
+									<Text>{order.village}</Text>
+								</View>
+							)}
+							{order.address && (
+								<View style={styles.row}>
+									<Text>Address:</Text>
+									<Text>{order.address}</Text>
+								</View>
+							)}
+						</>
+					)}
+
+					<View style={styles.separator} />
+
+					{/* Table Header */}
+					<View style={styles.tableHeader}>
+						<Text style={[styles.colItem, styles.bold]}>Item</Text>
+						<Text style={[styles.colQty, styles.bold]}>Qty</Text>
+						<Text style={[styles.colRate, styles.bold]}>Rate</Text>
+						<Text style={[styles.colTotal, styles.bold]}>Total</Text>
+					</View>
+
+					{/* Table Items */}
+					{order.items.map((item, idx) => {
+						const rate = Number.parseFloat(item.price);
+						const lineTotal = rate * item.qty;
+						const qtyStr = Number.isInteger(item.qty) ? item.qty.toString() : item.qty.toFixed(3);
+						return (
+							<View key={idx} style={styles.tableRow}>
+								<Text style={styles.colItem}>{item.name}</Text>
+								<Text style={styles.colQty}>{qtyStr}</Text>
+								<Text style={styles.colRate}>Rs.{rate.toFixed(2)}</Text>
+								<Text style={styles.colTotal}>Rs.{lineTotal.toFixed(2)}</Text>
+							</View>
+						);
+					})}
+
+					<View style={styles.separator} />
+
+					{/* Summary */}
+					<View style={styles.row}>
+						<Text>Subtotal:</Text>
+						<Text>Rs.{order.subtotal.toFixed(2)}</Text>
+					</View>
+					{order.discount > 0 && (
+						<View style={styles.row}>
+							<Text>Discount:</Text>
+							<Text>-Rs.{order.discount.toFixed(2)}</Text>
+						</View>
+					)}
+					{roundOff !== 0 && (
+						<View style={styles.row}>
+							<Text>Round-off:</Text>
+							<Text>{roundOff > 0 ? "+" : ""}Rs.{roundOff.toFixed(2)}</Text>
+						</View>
+					)}
+
+					<View style={styles.separator} />
+					<View style={styles.row}>
+						<Text style={[styles.bold, { fontSize: isA4 ? 14 : 11 }]}>Grand Total:</Text>
+						<Text style={[styles.bold, { fontSize: isA4 ? 14 : 11 }]}>Rs.{grandTotal.toFixed(2)}</Text>
+					</View>
+					<View style={styles.separator} />
+
+					{/* Footer */}
+					<View style={styles.footer}>
+						<Text style={[styles.bold, { marginBottom: 2, fontSize: isA4 ? 12 : 9 }]}>Thank you for shopping!</Text>
+						<Text>Goods once sold will not be taken back</Text>
+						<Text>without valid receipt within 7 days</Text>
+					</View>
+				</Page>
+			</Document>
+		);
+
+		return await pdf(<InvoiceDocument />).toBlob();
 	};
 
 	const handleDownloadPDF = async () => {
 		const toastId = toast.loading("Generating vector PDF...");
 		try {
-			// Dynamically import @react-pdf/renderer to avoid SSR issues
-			const { pdf, Document, Page, Text, View, StyleSheet, Font } = await import("@react-pdf/renderer");
-
-			// Register a font that supports Devanagari (Hindi) and basic Latin
-			// Loaded locally from our public/fonts folder to avoid 404/network errors
-			Font.register({
-				family: "NotoSansDevanagari",
-				src: `${window.location.origin}/fonts/NotoSansDevanagari-Regular.ttf`
-			});
-
-			const isA4 = pageSize === "A4";
-			const calculatedHeight = pageSize === "80mm"
-				? Math.max(140, 110 + order.items.length * 12 + (order.customerName ? 20 : 0) + order.payments.length * 5)
-				: 297; // A4 height is 297mm
-
-			const styles = StyleSheet.create({
-				page: {
-					fontFamily: "NotoSansDevanagari",
-					padding: isA4 ? 40 : 10,
-					fontSize: isA4 ? 12 : 9,
-					backgroundColor: "#ffffff",
-				},
-				header: {
-					textAlign: "center",
-					marginBottom: 10,
-				},
-				title: {
-					fontSize: isA4 ? 16 : 12,
-					fontWeight: "bold",
-					marginBottom: 4,
-				},
-				subtitle: {
-					fontSize: isA4 ? 10 : 8,
-					marginBottom: 2,
-				},
-				separator: {
-					borderBottomWidth: 1,
-					borderBottomStyle: "dashed",
-					borderBottomColor: "#000",
-					marginVertical: 6,
-				},
-				row: {
-					flexDirection: "row",
-					justifyContent: "space-between",
-					marginBottom: 4,
-				},
-				bold: {
-					fontWeight: "bold",
-				},
-				tableHeader: {
-					flexDirection: "row",
-					borderBottomWidth: 1,
-					borderBottomStyle: "dashed",
-					borderBottomColor: "#000",
-					paddingBottom: 4,
-					marginBottom: 4,
-				},
-				tableRow: {
-					flexDirection: "row",
-					marginBottom: 4,
-				},
-				colItem: { flex: isA4 ? 4 : 3 },
-				colQty: { flex: 1, textAlign: "right" },
-				colRate: { flex: 2, textAlign: "right" },
-				colTotal: { flex: 2, textAlign: "right" },
-				footer: {
-					textAlign: "center",
-					marginTop: 10,
-					fontSize: isA4 ? 10 : 7.5,
-				}
-			});
-
-			const InvoiceDocument = () => (
-				<Document>
-					<Page 
-						size={pageSize === "80mm" ? [226.77, calculatedHeight * 2.834] : "A4"} 
-						style={styles.page}
-					>
-						{/* Header */}
-						<View style={styles.header}>
-							<Text style={styles.title}>{STORE.name}</Text>
-							<Text style={styles.subtitle}>{STORE.address}</Text>
-							<Text style={styles.subtitle}>{STORE.city}</Text>
-							<Text style={styles.subtitle}>Phone: {STORE.phone}</Text>
-						</View>
-
-						<View style={styles.separator} />
-
-						{/* Invoice Meta */}
-						<View style={styles.row}>
-							<Text>Invoice No:</Text>
-							<Text>#{order.id}</Text>
-						</View>
-						<View style={styles.row}>
-							<Text>Date & Time:</Text>
-							<Text>{formattedDate}</Text>
-						</View>
-						<View style={styles.row}>
-							<Text>Cashier:</Text>
-							<Text>{order.cashierName || "Counter 1"}</Text>
-						</View>
-
-						{/* Customer Details */}
-						{(order.customerName || order.customerPhone || order.shopName) && (
-							<>
-								<View style={styles.separator} />
-								<Text style={[styles.bold, { marginBottom: 4 }]}>BILL TO:</Text>
-								{order.customerName && (
-									<View style={styles.row}>
-										<Text>Name:</Text>
-										<Text>{order.customerName}</Text>
-									</View>
-								)}
-								{order.shopName && (
-									<View style={styles.row}>
-										<Text>Shop:</Text>
-										<Text>{order.shopName}</Text>
-									</View>
-								)}
-								{order.customerPhone && (
-									<View style={styles.row}>
-										<Text>Phone:</Text>
-										<Text>{order.customerPhone}</Text>
-									</View>
-								)}
-								{order.address && (
-									<View style={styles.row}>
-										<Text>Address:</Text>
-										<Text>{order.address}</Text>
-									</View>
-								)}
-							</>
-						)}
-
-						<View style={styles.separator} />
-
-						{/* Table Header */}
-						<View style={styles.tableHeader}>
-							<Text style={[styles.colItem, styles.bold]}>Item</Text>
-							<Text style={[styles.colQty, styles.bold]}>Qty</Text>
-							<Text style={[styles.colRate, styles.bold]}>Rate</Text>
-							<Text style={[styles.colTotal, styles.bold]}>Total</Text>
-						</View>
-
-						{/* Table Items */}
-						{order.items.map((item, idx) => {
-							const rate = Number.parseFloat(item.price);
-							const lineTotal = rate * item.qty;
-							const qtyStr = Number.isInteger(item.qty) ? item.qty.toString() : item.qty.toFixed(3);
-							return (
-								<View key={idx} style={styles.tableRow}>
-									<Text style={styles.colItem}>{item.name}</Text>
-									<Text style={styles.colQty}>{qtyStr}</Text>
-									<Text style={styles.colRate}>Rs.{rate.toFixed(2)}</Text>
-									<Text style={styles.colTotal}>Rs.{lineTotal.toFixed(2)}</Text>
-								</View>
-							);
-						})}
-
-						<View style={styles.separator} />
-
-						{/* Summary */}
-						<View style={styles.row}>
-							<Text>Subtotal:</Text>
-							<Text>Rs.{order.subtotal.toFixed(2)}</Text>
-						</View>
-						{order.discount > 0 && (
-							<View style={styles.row}>
-								<Text>Discount:</Text>
-								<Text>-Rs.{order.discount.toFixed(2)}</Text>
-							</View>
-						)}
-						{roundOff !== 0 && (
-							<View style={styles.row}>
-								<Text>Round-off:</Text>
-								<Text>{roundOff > 0 ? "+" : ""}Rs.{roundOff.toFixed(2)}</Text>
-							</View>
-						)}
-
-						<View style={styles.separator} />
-						<View style={styles.row}>
-							<Text style={[styles.bold, { fontSize: isA4 ? 14 : 11 }]}>Grand Total:</Text>
-							<Text style={[styles.bold, { fontSize: isA4 ? 14 : 11 }]}>Rs.{grandTotal.toFixed(2)}</Text>
-						</View>
-						<View style={styles.separator} />
-
-						{/* Footer */}
-						<View style={styles.footer}>
-							<Text style={[styles.bold, { marginBottom: 2, fontSize: isA4 ? 12 : 9 }]}>Thank you for shopping!</Text>
-							<Text>Goods once sold will not be taken back</Text>
-							<Text>without valid receipt within 7 days</Text>
-						</View>
-					</Page>
-				</Document>
-			);
-
-			const blob = await pdf(<InvoiceDocument />).toBlob();
+			const blob = await generateInvoicePdfBlob();
 			const url = URL.createObjectURL(blob);
 			const link = document.createElement('a');
 			link.href = url;
-			link.download = `invoice_${order.id}_${pageSize}.pdf`;
+			link.download = `Invoice-${order.id}.pdf`;
 			document.body.appendChild(link);
 			link.click();
 			document.body.removeChild(link);
@@ -553,32 +556,47 @@ export function SaleCompletionScreen({
 		}
 	};
 
-	const handleWhatsApp = () => {
-		let itemsText = "";
-		order.items.forEach((item, idx) => {
-			const rate = Number.parseFloat(item.price);
-			const lineTotal = rate * item.qty;
-			const qtyStr = Number.isInteger(item.qty)
-				? item.qty
-				: item.qty.toFixed(3);
-			itemsText += `${idx + 1}. *${item.name}*\n   Qty: ${qtyStr} x ₹${rate.toFixed(2)} = *₹${lineTotal.toFixed(2)}*\n`;
-		});
+	const handleWhatsApp = async () => {
+		const toastId = toast.loading("Preparing PDF for WhatsApp...");
+		try {
+			const blob = await generateInvoicePdfBlob();
+			const fileName = `Invoice-${order.id}.pdf`;
+			const file = new File([blob], fileName, { type: "application/pdf" });
 
-		let customerText = "";
-		if (order.customerName || order.customerPhone || order.shopName) {
-			customerText += `--------------------------------\n*BILL TO:*\n`;
-			if (order.customerName) customerText += `• Name: ${order.customerName}\n`;
-			if (order.shopName) customerText += `• Shop: ${order.shopName}\n`;
-			if (order.customerPhone) customerText += `• Phone: ${order.customerPhone}\n`;
-			if (order.address) customerText += `• Address: ${order.address}\n`;
-		}
+			// If on mobile/tablet browser supporting sharing files directly:
+			if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+				await navigator.share({
+					files: [file],
+					title: `Invoice #${order.id}`,
+					text: `Here is your invoice from ${STORE.name}`,
+				});
+				toast.success("PDF Shared successfully!", { id: toastId });
+				return;
+			}
 
-		const fullText = `🧾 *INVOICE #${order.id}*\n*${STORE.name}*\n_${STORE.address}, ${STORE.city}_\n📞 Phone: ${STORE.phone}\n--------------------------------\n*Date:* ${formattedDate}\n*Cashier:* ${order.cashierName || "Counter 1"}\n${customerText}--------------------------------\n*ITEMS:*\n${itemsText}--------------------------------\n*Subtotal:* ₹${order.subtotal.toFixed(2)}\n*Grand Total:* *₹${grandTotal.toFixed(2)}*\n*Payment:* ${order.payments.map((p) => `${PAYMENT_METHOD_LABELS[p.methodId] ?? "Payment"}: ₹${Number.parseFloat(p.amount).toFixed(2)}`).join(", ")}\n--------------------------------\nThank you for shopping!\n_*EVALUNA PVT LTD*_`;
+			// Desktop / Web browser fallback: Auto-download the PDF and redirect to WhatsApp Web
+			const url = URL.createObjectURL(blob);
+			const link = document.createElement('a');
+			link.href = url;
+			link.download = fileName;
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+			URL.revokeObjectURL(url);
 
-		window.open(
-			`https://wa.me/?text=${encodeURIComponent(fullText)}`,
-			"_blank",
-		);
+			toast.success("Invoice PDF downloaded!", { id: toastId });
+			toast.info("Opening WhatsApp. Drag & drop the downloaded 'Invoice-" + order.id + ".pdf' file to send.", { duration: 8000 });
+
+			const shareText = `Invoice #${order.id} from ${STORE.name} has been generated. Please find the attached PDF.`;
+			setTimeout(() => {
+				window.open(
+					`https://wa.me/?text=${encodeURIComponent(shareText)}`,
+					"_blank",
+				);
+			}, 2000);
+		} catch (err: any) {
+			console.error("WhatsApp share error:", err);
+			toast.error("Could not prepare PDF for sharing.", { id: toastId });
 	};
 
 	const handleEmail = () => {
