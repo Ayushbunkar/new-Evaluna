@@ -61,7 +61,12 @@ export const posRouter = router({
 				const extra = Number.parseFloat(input.otherCharges || "0");
 				const total = subtotal - discount + extra;
 
-				const paid = input.payments.reduce(
+				// Sales-person bills are always UNPAID — payment is recorded later,
+				// not at checkout. Ignore client-sent payments for this role.
+				const isSalesPerson = ctx.user.role === "sales_person";
+				const effectivePayments = isSalesPerson ? [] : input.payments;
+
+				const paid = effectivePayments.reduce(
 					(acc, p) => acc + Number.parseFloat(p.amount),
 					0,
 				);
@@ -95,7 +100,10 @@ export const posRouter = router({
 
 				await tx.insert(orderItems).values(itemsToInsert);
 
-				if (status === "completed") {
+				// Deduct stock when the sale is completed (paid) OR when it's a
+				// sales-person bill — those goods leave with the sales person even
+				// though the bill is recorded as unpaid.
+				if (status === "completed" || isSalesPerson) {
 					// Batch insert stock ledger
 					const ledgerEntries = input.items.map((item) => ({
 						product_id: item.productId,
@@ -159,7 +167,7 @@ export const posRouter = router({
 					}
 				}
 
-				const paymentsToInsert = input.payments.map((payment) => ({
+				const paymentsToInsert = effectivePayments.map((payment) => ({
 					order_id: order.id,
 					payment_method_id: payment.methodId,
 					amount: payment.amount,
@@ -193,7 +201,7 @@ export const posRouter = router({
 					payload: {
 						order,
 						items: input.items,
-						payments: input.payments,
+						payments: effectivePayments,
 					},
 				});
 

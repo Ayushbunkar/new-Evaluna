@@ -36,8 +36,13 @@ import {
 	StaggerList,
 } from "@/lib/animations";
 import { trpc } from "@/lib/trpc/client";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function POSPage() {
+	const { session } = useAuth();
+	// Sales-person bills are always unpaid — mirror the server so the receipt
+	// shows UNPAID and no payment is recorded.
+	const isSalesPerson = session?.user?.role === "sales_person";
 	const [cart, setCart] = useState<any[]>([]);
 	const [search, setSearch] = useState("");
 	const [isOffline, setIsOffline] = useState(false);
@@ -314,7 +319,10 @@ export default function POSPage() {
 			return;
 		}
 
-		setLastPayments(payments);
+		// Sales-person bills are recorded unpaid; drop any entered payments.
+		const effectivePayments = isSalesPerson ? [] : payments;
+
+		setLastPayments(effectivePayments);
 		checkoutMutation.mutate({
 			customerId: customer?.customerId || undefined,
 			items: cart.map((c) => ({
@@ -322,7 +330,7 @@ export default function POSPage() {
 				quantity: c.qty,
 				price: c.price,
 			})),
-			payments: payments,
+			payments: effectivePayments,
 			isOfflineSync: false,
 			couponId: appliedCoupon?.id,
 			discountAmount: appliedCoupon?.discount
