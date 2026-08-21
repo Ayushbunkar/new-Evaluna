@@ -359,6 +359,7 @@ export default function CustomersPage() {
 						<PlusCircle className="mr-2 h-4 w-4" />
 						{t("addCustomer")}
 					</Button>
+					</SearchFilter>
 				</CardHeader>
 				<CardContent className="p-0">
 					<DataTable
@@ -411,8 +412,8 @@ export default function CustomersPage() {
 													}
 												/>
 											</div>
-										)}
-									)</form.Field>
+										</div>
+									)}
 								</form.Field>
 								<form.Field name="email">
 									{(field) => (
@@ -433,8 +434,8 @@ export default function CustomersPage() {
 													}
 												/>
 											</div>
-										)}
-									)</form.Field>
+										</div>
+									)}
 								</form.Field>
 								<form.Field name="phone">
 									{(field) => (
@@ -455,8 +456,8 @@ export default function CustomersPage() {
 													}
 												/>
 											</div>
-										)}
-									)</form.Field>
+										</div>
+									)}
 								</form.Field>
 								<form.Field name="address">
 									{(field) => (
@@ -477,8 +478,8 @@ export default function CustomersPage() {
 													}
 												/>
 											</div>
-										)}
-									)</form.Field>
+										</div>
+									)}
 								</form.Field>
 								<form.Field name="village">
 									{(field) => (
@@ -499,8 +500,8 @@ export default function CustomersPage() {
 													}
 												/>
 											</div>
-										)}
-									)</form.Field>
+										</div>
+									)}
 								</form.Field>
 								<form.Field name="status">
 									{(field) => (
@@ -519,39 +520,37 @@ export default function CustomersPage() {
 													<SelectItem value="active">{tc("active")}</SelectItem>
 													<SelectItem value="inactive">
 														{tc("inactive")}
-													</SelectContent>
-												</Select>
-											</div>
-										)
+													</SelectItem>
+												</SelectContent>
+											</Select>
+										</div>
 									)}
-								</div>
+								</form.Field>
 							</div>
+							<DialogFooter>
+								<Button
+									variant="secondary"
+									onClick={() => setIsDialogOpen(false)}
+								>
+									{tc("cancel")}
+								</Button>
+								<form.Subscribe selector={(state) => state.isSubmitting}>
+									{(isSubmitting) => (
+										<Button
+											type="submit"
+											disabled={
+												isSubmitting ||
+												createMutation.isPending ||
+												updateMutation.isPending
+											}
+										>
+											{isEditing ? t("updateCustomer") : t("addCustomer")}
+										</Button>
+									)}
+								</form.Subscribe>
+							</DialogFooter>
 						</form>
 					</DialogContent>
-					<DialogFooter>
-						<Button
-							variant="secondary"
-							onClick={() => setIsDialogOpen(false)}
-						>
-							{tc("cancel")}
-						</Button>
-						<form.Subscribe selector={(state) => state.isSubmitting}>
-							{(isSubmitting) => (
-								<Button
-												type="submit"
-												disabled={
-													isSubmitting ||
-													createMutation.isPending ||
-													updateMutation.isPending
-												}
-											>
-												{isEditing ? t("updateCustomer") : t("addCustomer")}
-											</Button>
-										)}
-									</form.Subscribe>
-							)}
-						</form.Subscribe>
-					</DialogFooter>
 				</Dialog>
 
 				<DeleteConfirmationDialog
@@ -561,6 +560,5 @@ export default function CustomersPage() {
 					isDeleting={deleteMutation.isPending}
 				/>
 			</Card>
-		</div>
 	);
 }
