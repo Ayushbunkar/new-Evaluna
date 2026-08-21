@@ -13,7 +13,6 @@ import {
 	IndianRupee,
 	RotateCcw,
 	ShoppingBag,
-	Store,
 	X,
 	XCircle,
 } from "lucide-react";
@@ -540,7 +539,7 @@ export function SaleCompletionScreen({
 										{order.address ? <Text style={styles.subtitle}>Address: {order.address}</Text> : null}
 									</>
 								) : (
-									<Text style={[styles.subtitle, { fontStyle: "italic" }]}>Walk-in Customer</Text>
+									<Text style={styles.subtitle}>Walk-in Customer</Text>
 								)}
 							</View>
 							<View style={styles.card}>
@@ -714,7 +713,7 @@ export function SaleCompletionScreen({
 							</View>
 							<View style={{ alignItems: "center" }}>
 								<View style={{ width: 120, borderBottomWidth: 1, borderBottomColor: "#cbd5e1", marginBottom: 6 }} />
-								<Text style={{ fontSize: 9, color: "#64748b", fontStyle: "italic" }}>Authorized Signatory</Text>
+								<Text style={{ fontSize: 9, color: "#64748b" }}>Authorized Signatory</Text>
 							</View>
 						</View>
 					) : (
@@ -995,9 +994,7 @@ export function SaleCompletionScreen({
 												{/* Header */}
 												<div className="flex justify-between items-start mb-6">
 													<div className="flex items-center gap-3">
-														<div className="h-12 w-12 bg-blue-800 rounded-lg flex items-center justify-center text-white shrink-0">
-															<Store className="h-7 w-7" />
-														</div>
+														<img src="/logo.jpg" alt={STORE.name} className="h-12 w-12 rounded-lg object-cover shrink-0" />
 														<div>
 															<h1 className="text-2xl font-black text-blue-900 tracking-tight">{STORE.name}</h1>
 															<p className="text-slate-500 text-xs mt-0.5">{STORE.address}</p>
