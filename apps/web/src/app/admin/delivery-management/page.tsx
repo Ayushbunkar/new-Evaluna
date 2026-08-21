@@ -2,7 +2,7 @@
 
 import type { Metadata } from "next";
 import { DeliveryManagementDashboard } from "@/components/delivery/delivery-management-dashboard";
-import { getServerClient } from "@/lib/trpc/server";
+import { getServerClient } from "@/lib/trpc/serverClient";
 
 export const metadata: Metadata = {
 	title: "Delivery Management | Evaluna ERP",
@@ -11,13 +11,13 @@ export const metadata: Metadata = {
 
 export default async function DeliveryManagementPage() {
 	const trpc = await getServerClient();
-	const branches = await (trpc as any).branches.list();
+	const branches = await trpc.branches.list().catch(() => []);
 
 	// Fetch initial data for the current user's branch
-	const routes = await trpc.delivery.listRoutes({});
-	const serverClient = await getServerClient();
-	const vehicles = await serverClient.vehicles.list({});
-	const staff = await (trpc as any).staff.list({}); // Assuming staff list includes drivers
+	const routes = await trpc.delivery.listRoutes({}).catch(() => []);
+	
+	const vehicles = await trpc.vehicles.list({}).catch(() => []);
+	const staff = await trpc.staff.list({}).catch(() => []); // Assuming staff list includes drivers
 
 	// Filter staff to find delivery drivers
 	const drivers = staff.filter(
@@ -43,4 +43,5 @@ export default async function DeliveryManagementPage() {
 		</div>
 	);
 }
+
 

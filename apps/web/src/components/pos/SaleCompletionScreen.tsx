@@ -525,8 +525,8 @@ export function SaleCompletionScreen({
 					className="flex max-h-[95vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
 				>
 					{/* ── Screen Control Bar (Hidden on Print) ── */}
-					<div className="flex shrink-0 items-center justify-between bg-blue-900 px-6 py-4 text-white print:hidden">
-						<div className="flex items-center gap-3">
+					<div className="flex shrink-0 flex-col sm:flex-row gap-4 items-center justify-between bg-blue-900 px-6 py-4 text-white print:hidden">
+						<div className="flex items-center gap-3 w-full sm:w-auto">
 							<div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-800 text-white shadow-inner">
 								<Receipt className="h-5 w-5 text-blue-200" />
 							</div>
@@ -541,11 +541,11 @@ export function SaleCompletionScreen({
 						</div>
 
 						{/* Format Selector Tabs */}
-						<div className="flex rounded-lg bg-blue-950/80 p-0.5 border border-blue-800">
+						<div className="flex rounded-lg bg-blue-950/80 p-0.5 border border-blue-800 w-full sm:w-auto justify-center">
 							<button
 								type="button"
 								onClick={() => setPageSize("A4")}
-								className={`rounded-md px-4 py-1.5 text-xs font-bold transition-all cursor-pointer ${
+								className={`flex-1 sm:flex-none rounded-md px-4 py-1.5 text-xs font-bold transition-all cursor-pointer text-center ${
 									pageSize === "A4"
 										? "bg-blue-800 text-white shadow-sm"
 										: "text-blue-300 hover:text-white"
@@ -556,7 +556,7 @@ export function SaleCompletionScreen({
 							<button
 								type="button"
 								onClick={() => setPageSize("80mm")}
-								className={`rounded-md px-4 py-1.5 text-xs font-bold transition-all cursor-pointer ${
+								className={`flex-1 sm:flex-none rounded-md px-4 py-1.5 text-xs font-bold transition-all cursor-pointer text-center ${
 									pageSize === "80mm"
 										? "bg-blue-800 text-white shadow-sm"
 										: "text-blue-300 hover:text-white"
@@ -567,7 +567,7 @@ export function SaleCompletionScreen({
 						</div>
 
 						{/* Top Actions */}
-						<div className="flex items-center gap-2">
+						<div className="flex items-center gap-2 w-full sm:w-auto justify-end">
 							<Button
 								variant="ghost"
 								size="sm"
@@ -597,7 +597,7 @@ export function SaleCompletionScreen({
 						</div>
 					</div>
 
-					<div className="flex min-h-0 flex-1 overflow-hidden">
+					<div className="flex min-h-0 flex-1 flex-col md:flex-row overflow-hidden">
 						{/* ── Center-Aligned Interactive Preview Canvas ── */}
 						<div className="flex min-h-0 flex-1 bg-slate-100 overflow-auto p-6 print:p-0 print:bg-white">
 							<div className="m-auto flex min-h-full min-w-max items-center justify-center print:m-0 print:block">
@@ -862,7 +862,7 @@ export function SaleCompletionScreen({
 						</div>
 
 						{/* ── Right Actions Panel ── */}
-						<div className="flex w-64 shrink-0 flex-col gap-3 bg-slate-50 p-4 border-l border-slate-200 print:hidden overflow-y-auto">
+						<div className="flex w-full md:w-64 shrink-0 flex-col gap-3 bg-slate-50 p-4 border-t md:border-t-0 md:border-l border-slate-200 print:hidden overflow-y-auto">
 							<div className="mb-1 font-bold text-slate-400 text-xs uppercase tracking-wider">
 								Actions
 							</div>
