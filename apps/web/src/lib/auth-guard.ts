@@ -130,13 +130,31 @@ export async function getAuthUser(
 
 	// Use the actual stored token as the cache key going forward
 	const matchedToken = sessionRecord.token;
+	console.log(
+		"[auth-guard] session matched. userId:",
+		sessionRecord.userId,
+	);
 
 	// 4. Resolve user
 	const dbUser = await db.query.user.findFirst({
 		where: eq(userTable.id, sessionRecord.userId),
 	});
 
-	if (!dbUser?.is_active) {
+	if (!dbUser) {
+		console.log(
+			"[auth-guard] session found but user row missing for userId:",
+			sessionRecord.userId,
+		);
+		return null;
+	}
+
+	if (dbUser.is_active === false) {
+		console.log(
+			"[auth-guard] user is_active is false. userId:",
+			dbUser.id,
+			"email:",
+			dbUser.email,
+		);
 		return null;
 	}
 
