@@ -25,25 +25,66 @@ import {
  * the session token directly against the database to avoid Better Auth
  * plugin conflicts with Next.js cookie writing rules in route handlers.
  */
-export async function getAuthUser(): Promise<CachedSession | null> {
-	// 1. Read cookies safely using Next.js native API (works everywhere for read)
-	let cookieStore;
-	try {
-		cookieStore = await cookies();
-	} catch (err) {
-		console.error("[auth-guard] Failed to await cookies():", err);
-		return null;
+export async function getAuthUser(
+	reqHeaders?: Headers,
+): Promise<CachedSession | null> {
+	// 1. Resolve the session token.
+	// Prefer the cookie header from the incoming request (passed by the tRPC
+	// fetch route handler) — on Vercel, next/headers cookies() can come back
+	// empty inside fetch route handlers, which would treat every API call as
+	// logged-out. Fall back to next/headers cookies() for RSC/server usage.
+	let sessionToken: string | null = null;
+
+	const COOKIE_NAMES = [
+		"__Secure-evaluna.session_token",
+		"evaluna.session_token",
+		"__Secure-better-auth.session_token",
+		"better-auth.session_token",
+	];
+
+	if (reqHeaders) {
+		const cookieHeader = reqHeaders.get("cookie") || "";
+		const parsed = new Map<string, string>();
+		for (const part of cookieHeader.split(";")) {
+			const idx = part.indexOf("=");
+			if (idx === -1) continue;
+			const name = part.slice(0, idx).trim();
+			const value = part.slice(idx + 1).trim();
+			if (name) parsed.set(name, decodeURIComponent(value));
+		}
+		for (const name of COOKIE_NAMES) {
+			const v = parsed.get(name);
+			if (v) {
+				sessionToken = v;
+				break;
+			}
+		}
 	}
 
-	const sessionToken =
-		cookieStore.get("__Secure-evaluna.session_token")?.value ||
-		cookieStore.get("evaluna.session_token")?.value ||
-		cookieStore.get("__Secure-better-auth.session_token")?.value ||
-		cookieStore.get("better-auth.session_token")?.value ||
-		null;
+	if (!sessionToken) {
+		let cookieStore;
+		try {
+			cookieStore = await cookies();
+		} catch (err) {
+			console.error("[auth-guard] Failed to await cookies():", err);
+			return null;
+		}
+		for (const name of COOKIE_NAMES) {
+			const v = cookieStore.get(name)?.value;
+			if (v) {
+				sessionToken = v;
+				break;
+			}
+		}
+		if (!sessionToken) {
+			console.log(
+				"[auth-guard] sessionToken is null. Cookies found:",
+				cookieStore.getAll().map((c) => c.name).join(", "),
+			);
+		}
+	}
 
 	if (!sessionToken) {
-		console.log("[auth-guard] sessionToken is null. Cookies found:", cookieStore.getAll().map(c => c.name).join(", "));
 		return null;
 	}
 
