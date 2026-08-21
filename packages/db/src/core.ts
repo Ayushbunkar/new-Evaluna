@@ -107,7 +107,8 @@ export const customers = pgTable("customers", {
 	customer_code: varchar("customer_code", { length: 50 }).unique(),
 	name: varchar("name", { length: 255 }).notNull(),
 	email: varchar("email", { length: 255 }).unique(),
-	phone: varchar("phone", { length: 20 }),
+	// 30 chars so a customer with two numbers ("9999999999, 8888888888") fits.
+	phone: varchar("phone", { length: 30 }),
 	address: text("address"),
 	village: varchar("village", { length: 100 }),
 	latitude: varchar("latitude", { length: 50 }),

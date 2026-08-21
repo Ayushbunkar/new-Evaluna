@@ -40,6 +40,7 @@ interface CompletedOrder {
 	customerPhone?: string;
 	shopName?: string;
 	address?: string;
+	village?: string;
 	couponCode?: string;
 }
 
@@ -807,6 +808,7 @@ export function SaleCompletionScreen({
 																{order.customerName && <div className="font-semibold text-slate-900 print:text-black">{order.customerName}</div>}
 																{order.shopName && <div><span className="text-slate-400 print:text-slate-600">Shop:</span> {order.shopName}</div>}
 																{order.customerPhone && <div><span className="text-slate-400 print:text-slate-600">Phone:</span> {order.customerPhone}</div>}
+																{order.village && <div><span className="text-slate-400 print:text-slate-600">Village:</span> {order.village}</div>}
 																{order.address && <div><span className="text-slate-400 print:text-slate-600">Address:</span> {order.address}</div>}
 															</div>
 														) : (
@@ -938,6 +940,8 @@ export function SaleCompletionScreen({
 															<div>NAME: {order.customerName}</div>
 															{order.shopName && <div>SHOP: {order.shopName}</div>}
 															{order.customerPhone && <div>PHONE: {order.customerPhone}</div>}
+															{order.village && <div>VILLAGE: {order.village}</div>}
+															{order.address && <div>ADDRESS: {order.address}</div>}
 														</div>
 													</>
 												)}

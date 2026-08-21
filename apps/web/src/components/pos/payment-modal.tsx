@@ -23,6 +23,7 @@ export function PaymentModal({
 	const [customerPhone, setCustomerPhone] = useState("");
 	const [shopName, setShopName] = useState("");
 	const [address, setAddress] = useState("");
+	const [village, setVillage] = useState("");
 	const [customerId, setCustomerId] = useState<number | null>(null);
 	const [customerCode, setCustomerCode] = useState("");
 
@@ -57,6 +58,7 @@ export function PaymentModal({
 			setCustomerPhone("");
 			setShopName("");
 			setAddress("");
+			setVillage("");
 			setCustomerId(null);
 			setCustomerCode("");
 			setSearchQuery("");
@@ -81,6 +83,7 @@ export function PaymentModal({
 		setCustomerPhone(customer.phone ?? "");
 		setShopName(""); // customers table doesn't have shop name separately
 		setAddress(customer.address ?? "");
+		setVillage(customer.village ?? "");
 		setCustomerId(customer.id);
 		setCustomerCode(customer.customer_code ?? "");
 		setSearchQuery(customer.name ?? "");
@@ -93,6 +96,7 @@ export function PaymentModal({
 		setCustomerPhone("");
 		setShopName("");
 		setAddress("");
+		setVillage("");
 		setCustomerId(null);
 		setCustomerCode("");
 		setSearchQuery("");
@@ -107,6 +111,7 @@ export function PaymentModal({
 			customerPhone: customerPhone.trim() || undefined,
 			shopName: shopName.trim() || undefined,
 			address: address.trim() || undefined,
+			village: village.trim() || undefined,
 		});
 		onOpenChange(false);
 	};
@@ -186,9 +191,10 @@ export function PaymentModal({
 															</span>
 														)}
 													</div>
-													<div className="text-xs text-muted-foreground">
+													<div className="text-xs text-muted-foreground flex flex-wrap gap-x-2 gap-y-0.5 mt-0.5">
 														{customer.phone && <span>📞 {customer.phone}</span>}
-														{customer.email && <span className="ml-2 truncate">• {customer.email}</span>}
+														{customer.village && <span>🏡 {customer.village}</span>}
+														{customer.email && <span className="truncate">• {customer.email}</span>}
 													</div>
 												</div>
 											</button>
@@ -218,9 +224,10 @@ export function PaymentModal({
 											<span className="text-muted-foreground text-xs ml-auto">📞 {customerPhone}</span>
 										)}
 									</div>
-									{address && (
-										<div className="text-xs text-muted-foreground mt-0.5 border-t border-primary/10 pt-1">
-											📍 {address}
+									{(address || village) && (
+										<div className="text-xs text-muted-foreground mt-0.5 border-t border-primary/10 pt-1 flex flex-col gap-0.5">
+											{village && <div>🏡 Village: {village}</div>}
+											{address && <div>📍 Address: {address}</div>}
 										</div>
 									)}
 								</div>

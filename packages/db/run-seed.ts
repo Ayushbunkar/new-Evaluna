@@ -1,4 +1,5 @@
 import { db } from "./src/index";
+import { normalizePhone } from "./src/utils/phone";
 import { customers } from "./src/schema";
 import { branches } from "./src/schema";
 import { staff } from "./src/schema";
@@ -73,8 +74,8 @@ async function main() {
       continue;
     }
 
-    // Clean phone number: remove spaces and slashes
-    const cleanPhone = contactNumber.replace(/\s+/g, "").replace(/\//g, "");
+    // Clean phone number: preserve two-number entries by joining with ", "
+    const cleanPhone = normalizePhone(contactNumber);
 
     // Skip if phone is empty after cleaning
     if (!cleanPhone) {
@@ -94,7 +95,7 @@ async function main() {
       customer_code: customerCode,
       name: name,
       email: email || undefined,
-      phone: cleanPhone.length > 0 && cleanPhone.length <= 20 ? cleanPhone : undefined,
+      phone: cleanPhone && cleanPhone.length <= 30 ? cleanPhone : undefined,
       address: `${villageName}, India`,
       village: villageName,
       latitude: undefined,

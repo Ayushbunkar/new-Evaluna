@@ -43,6 +43,7 @@ export default function POSPage() {
 	const [isOffline, setIsOffline] = useState(false);
 	const [paymentModalOpen, setPaymentModalOpen] = useState(false);
 	const [lastCompletedOrder, setLastCompletedOrder] = useState<any>(null);
+	const [customerDetails, setCustomerDetails] = useState<{ customerName?: string; customerPhone?: string; shopName?: string; address?: string; village?: string; customerId?: number }>({});
 
 	const [couponCode, setCouponCode] = useState("");
 	const [couponModalOpen, setCouponModalOpen] = useState(false);
@@ -70,6 +71,7 @@ export default function POSPage() {
 				discount: discount,
 				couponCode: appliedCoupon?.code,
 				payments: lastPayments,
+				...customerDetails,
 			});
 			setCart([]);
 			setAppliedCoupon(null);
@@ -249,7 +251,9 @@ export default function POSPage() {
 		setPaymentModalOpen(true);
 	};
 
-	const finalizeOrder = (payments: any[]) => {
+	const finalizeOrder = (payments: any[], customer?: { customerName?: string; customerPhone?: string; shopName?: string; address?: string; village?: string; customerId?: number }) => {
+		if (customer) setCustomerDetails(customer);
+
 		if (isOffline) {
 			toast.info("Saved offline bill. Will sync when online.");
 			setCart([]);
@@ -259,6 +263,7 @@ export default function POSPage() {
 
 		setLastPayments(payments);
 		checkoutMutation.mutate({
+			customerId: customer?.customerId || undefined,
 			items: cart.map((c) => ({
 				productId: c.id,
 				quantity: c.qty,
@@ -522,7 +527,7 @@ export default function POSPage() {
 					open={paymentModalOpen}
 					onOpenChange={setPaymentModalOpen}
 					totalAmount={total}
-					onConfirm={(payments: any[]) => finalizeOrder(payments)}
+					onConfirm={(payments: any[], customer: any) => finalizeOrder(payments, customer)}
 				/>
 			)}
 

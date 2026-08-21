@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { eq, sql } from "drizzle-orm";
 import { auth } from "../auth";
+import { normalizePhone } from "@evaluna/db";
 import { db } from ".";
 import {
   customers,
@@ -67,8 +68,8 @@ export async function seed() {
       continue;
     }
 
-    // Clean phone number
-    const cleanPhone = contactNumber.replace(/\s+/g, "").replace(/\//g, "");
+    // Clean phone number: preserve two-number entries (joined with ", ")
+    const cleanPhone = normalizePhone(contactNumber);
 
     // Generate customer code
     const cleanName = name.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
@@ -80,7 +81,7 @@ export async function seed() {
     customerValues.push({
       name: name,
       email: email,
-      phone: cleanPhone.length > 0 ? cleanPhone.substring(0, 20) : undefined,
+      phone: cleanPhone ? cleanPhone.substring(0, 30) : undefined,
       user_uid: userId,
       status: "active",
       village: villageName,

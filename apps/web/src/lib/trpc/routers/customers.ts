@@ -1,4 +1,4 @@
-import { customerLedger, customers, orders, customerContacts } from "@evaluna/db/schema";
+import { customerLedger, customers, orders, customerContacts, normalizePhone } from "@evaluna/db/schema";
 import { and, desc, eq, isNull, or } from "drizzle-orm";
 import { z } from "zod/v4";
 import { db } from "@/lib/db";
@@ -123,6 +123,7 @@ export const customersRouter = router({
 					.insert(customers)
 					.values({
 						...input,
+						phone: normalizePhone(input.phone),
 						email: emailToUse,
 						customer_code: code,
 						user_uid: ctx.user.id,
@@ -168,6 +169,11 @@ export const customersRouter = router({
 		.mutation(async ({ ctx, input }) => {
 			try {
 				const { id, ...data } = input;
+				// Only normalize when a phone was actually supplied, so an update
+				// that omits phone doesn't overwrite the stored value.
+				if (data.phone !== undefined) {
+					data.phone = normalizePhone(data.phone);
+				}
 				const [updated] = await db
 					.update(customers)
 					.set({ ...data, user_uid: ctx.user.id })

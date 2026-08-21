@@ -70,6 +70,7 @@ export default function CustomersPage() {
 		name: z.string().min(1, t("nameRequired")),
 		email: z.preprocess(v => (v === "" ? undefined : v), z.string().email(t("invalidEmail")).optional()),
 		phone: z.string().optional(),
+		phone2: z.string().optional(),
 		address: z.string().optional(),
 		status: z.enum(["active", "inactive"]),
 	});
@@ -217,6 +218,7 @@ export default function CustomersPage() {
 			name: "",
 			email: "",
 			phone: "",
+			phone2: "",
 			address: "",
 			status: "active" as "active" | "inactive",
 		},
@@ -224,10 +226,16 @@ export default function CustomersPage() {
 			onSubmit: customerFormSchema,
 		},
 		onSubmit: ({ value }) => {
+			// Combine both numbers into the single phone field; the server
+			// normalizes them (stored as "number1, number2").
+			const combinedPhone = [value.phone, value.phone2]
+				.map((p) => p?.trim())
+				.filter(Boolean)
+				.join(", ");
 			const payload = {
 				name: value.name,
 				email: value.email,
-				phone: value.phone || undefined,
+				phone: combinedPhone || undefined,
 				address: value.address || undefined,
 				status: value.status,
 			};
@@ -262,7 +270,14 @@ export default function CustomersPage() {
 		form.reset();
 		form.setFieldValue("name", c.name);
 		form.setFieldValue("email", c.email ?? "");
-		form.setFieldValue("phone", c.phone ?? "");
+		// Stored phone may hold two numbers ("num1, num2") — split back into
+		// the two form fields for editing.
+		const phones = (c.phone ?? "")
+			.split(",")
+			.map((p) => p.trim())
+			.filter(Boolean);
+		form.setFieldValue("phone", phones[0] ?? "");
+		form.setFieldValue("phone2", phones[1] ?? "");
 		form.setFieldValue("address", c.address ?? "");
 		form.setFieldValue(
 			"status",
@@ -444,6 +459,31 @@ export default function CustomersPage() {
 											<div className="col-span-3">
 												<Input
 													id="phone"
+													value={field.state.value}
+													onChange={(e) => field.handleChange(e.target.value)}
+													onBlur={field.handleBlur}
+													error={
+														field.state.meta.errors.length > 0
+															? field.state.meta.errors
+																	.map((e) => e?.message ?? e)
+																	.join(", ")
+															: undefined
+													}
+												/>
+											</div>
+										</div>
+									)}
+								</form.Field>
+								<form.Field name="phone2">
+									{(field) => (
+										<div className="flex flex-col gap-2 sm:grid sm:grid-cols-4 sm:items-center sm:gap-4">
+											<Label htmlFor="phone2">
+												{tc("phone")} 2{" "}
+												<span className="text-muted-foreground">(optional)</span>
+											</Label>
+											<div className="col-span-3">
+												<Input
+													id="phone2"
 													value={field.state.value}
 													onChange={(e) => field.handleChange(e.target.value)}
 													onBlur={field.handleBlur}

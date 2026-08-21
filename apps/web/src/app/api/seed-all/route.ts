@@ -14,6 +14,7 @@ import {
   purchases,
   staff,
   suppliers,
+  normalizePhone,
 } from "@evaluna/db/schema";
 import { deliveryTrips, tripStops, tripCollections } from "@evaluna/db/schema/delivery";
 import { eq } from "drizzle-orm";
@@ -204,8 +205,8 @@ export async function GET() {
       const [name, contactNumber, villageName] = line.split(',').map(field => field.trim());
 
       if (name && contactNumber && villageName) {
-        // Clean phone number - remove any extra characters/spaces
-        const cleanPhone = contactNumber.replace(/\s+/g, '').replace(/\//g, '');
+        // Clean phone number: preserve two-number entries (joined with ", ")
+        const cleanPhone = normalizePhone(contactNumber);
 
         // Generate a unique customer code from name
         const cleanName = name.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
@@ -219,7 +220,7 @@ export async function GET() {
           customer_code: customerCode,
           name: name,
           email: email || undefined, // Only set if valid
-          phone: cleanPhone.length > 0 && cleanPhone.length <= 20 ? cleanPhone : undefined,
+          phone: cleanPhone && cleanPhone.length <= 30 ? cleanPhone : undefined,
           address: `${villageName}, India`, // Construct address from village
           village: villageName,
           latitude: undefined, // Not provided in CSV
