@@ -642,28 +642,28 @@ export function SaleCompletionScreen({
 												</div>
 
 												{/* Meta & Status Card */}
-												<div className="grid grid-cols-3 gap-4 mb-6">
-													<div className="col-span-2 bg-blue-50/50 border border-blue-100 rounded-xl p-4">
-														<div className="text-xs font-bold text-blue-900 uppercase tracking-wider mb-2">Customer Details</div>
+												<div className="flex w-full gap-4 mb-6">
+													<div className="w-2/3 bg-blue-50/50 print:bg-transparent border border-blue-100 print:border-slate-300 rounded-xl p-4">
+														<div className="text-xs font-bold text-blue-900 print:text-black uppercase tracking-wider mb-2">Customer Details</div>
 														{order.customerName || order.customerPhone || order.shopName ? (
-															<div className="space-y-1 text-xs text-slate-700">
-																{order.customerName && <div className="font-semibold text-slate-900">{order.customerName}</div>}
-																{order.shopName && <div><span className="text-slate-400">Shop:</span> {order.shopName}</div>}
-																{order.customerPhone && <div><span className="text-slate-400">Phone:</span> {order.customerPhone}</div>}
-																{order.address && <div><span className="text-slate-400">Address:</span> {order.address}</div>}
+															<div className="space-y-1 text-xs text-slate-700 print:text-black">
+																{order.customerName && <div className="font-semibold text-slate-900 print:text-black">{order.customerName}</div>}
+																{order.shopName && <div><span className="text-slate-400 print:text-slate-600">Shop:</span> {order.shopName}</div>}
+																{order.customerPhone && <div><span className="text-slate-400 print:text-slate-600">Phone:</span> {order.customerPhone}</div>}
+																{order.address && <div><span className="text-slate-400 print:text-slate-600">Address:</span> {order.address}</div>}
 															</div>
 														) : (
 															<div className="text-xs text-slate-400 italic">Walk-in Customer</div>
 														)}
 													</div>
-													<div className="bg-blue-50/50 border border-blue-100 rounded-xl p-4 flex flex-col justify-between items-end">
-														<span className="text-xs font-bold text-blue-900 uppercase tracking-wider">Payment Status</span>
+													<div className="w-1/3 bg-blue-50/50 print:bg-transparent border border-blue-100 print:border-slate-300 rounded-xl p-4 flex flex-col justify-between items-end">
+														<span className="text-xs font-bold text-blue-900 print:text-black uppercase tracking-wider">Payment Status</span>
 														<span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold border ${
 															status.label === "PAID" 
-																? "bg-green-50 text-green-700 border-green-200" 
+																? "bg-green-50 text-green-700 border-green-200 print:border-black print:text-black" 
 																: status.label === "PARTIAL"
-																	? "bg-yellow-50 text-yellow-700 border-yellow-200"
-																	: "bg-red-50 text-red-700 border-red-200"
+																	? "bg-yellow-50 text-yellow-700 border-yellow-200 print:border-black print:text-black"
+																	: "bg-red-50 text-red-700 border-red-200 print:border-black print:text-black"
 														}`}>
 															{status.label}
 														</span>
@@ -671,34 +671,34 @@ export function SaleCompletionScreen({
 												</div>
 
 												{/* Itemized Table */}
-												<div className="border border-slate-200 rounded-xl overflow-hidden mb-6">
-													<table className="w-full text-xs">
+												<div className="border border-slate-200 print:border-black rounded-xl overflow-hidden mb-6">
+													<table className="w-full text-xs border-collapse">
 														<thead>
-															<tr className="bg-blue-800 text-white font-semibold text-left">
-																<th className="py-2.5 px-4 w-12 text-center">#</th>
-																<th className="py-2.5 px-4">Item Description</th>
-																<th className="py-2.5 px-4 w-24">SKU</th>
-																<th className="py-2.5 px-4 w-20 text-center">Qty</th>
-																<th className="py-2.5 px-4 w-24 text-right">Unit Price</th>
-																<th className="py-2.5 px-4 w-20 text-right">Discount</th>
-																<th className="py-2.5 px-4 w-28 text-right">Total</th>
+															<tr className="bg-blue-800 print:bg-transparent print:border-b print:border-black text-white print:text-black font-semibold text-left">
+																<th className="py-2.5 px-4 w-12 text-center border-b border-transparent print:border-black">#</th>
+																<th className="py-2.5 px-4 border-b border-transparent print:border-black">Item Description</th>
+																<th className="py-2.5 px-4 w-24 border-b border-transparent print:border-black">SKU</th>
+																<th className="py-2.5 px-4 w-20 text-center border-b border-transparent print:border-black">Qty</th>
+																<th className="py-2.5 px-4 w-24 text-right border-b border-transparent print:border-black">Unit Price</th>
+																<th className="py-2.5 px-4 w-20 text-right border-b border-transparent print:border-black">Discount</th>
+																<th className="py-2.5 px-4 w-28 text-right border-b border-transparent print:border-black">Total</th>
 															</tr>
 														</thead>
-														<tbody className="divide-y divide-slate-100">
+														<tbody className="divide-y divide-slate-100 print:divide-black/20">
 															{order.items.map((item, idx) => {
 																const rate = Number.parseFloat(item.price);
 																const lineTotal = rate * item.qty;
 																return (
-																	<tr key={idx} className="even:bg-slate-50/50 hover:bg-slate-50/30 transition-colors">
-																		<td className="py-2.5 px-4 text-center text-slate-400 font-medium">{idx + 1}</td>
-																		<td className="py-2.5 px-4 font-medium text-slate-800">{item.name}</td>
-																		<td className="py-2.5 px-4 text-slate-500 font-mono text-[10px]">SKU-{item.id}</td>
-																		<td className="py-2.5 px-4 text-center font-semibold text-slate-700">
+																	<tr key={idx} className="even:bg-slate-50/50 print:even:bg-transparent hover:bg-slate-50/30 transition-colors">
+																		<td className="py-2.5 px-4 text-center text-slate-400 print:text-slate-800 font-medium">{idx + 1}</td>
+																		<td className="py-2.5 px-4 font-medium text-slate-800 print:text-black">{item.name}</td>
+																		<td className="py-2.5 px-4 text-slate-500 print:text-slate-800 font-mono text-[10px]">SKU-{item.id}</td>
+																		<td className="py-2.5 px-4 text-center font-semibold text-slate-700 print:text-black">
 																			{Number.isInteger(item.qty) ? item.qty : item.qty.toFixed(3)}
 																		</td>
-																		<td className="py-2.5 px-4 text-right text-slate-600">₹{rate.toFixed(2)}</td>
-																		<td className="py-2.5 px-4 text-right text-green-600">-</td>
-																		<td className="py-2.5 px-4 text-right font-semibold text-slate-900">₹{lineTotal.toFixed(2)}</td>
+																		<td className="py-2.5 px-4 text-right text-slate-600 print:text-black">₹{rate.toFixed(2)}</td>
+																		<td className="py-2.5 px-4 text-right text-green-600 print:text-black">-</td>
+																		<td className="py-2.5 px-4 text-right font-semibold text-slate-900 print:text-black">₹{lineTotal.toFixed(2)}</td>
 																	</tr>
 																);
 															})}
@@ -706,33 +706,33 @@ export function SaleCompletionScreen({
 													</table>
 												</div>
 
-												{/* Summary Grid */}
-												<div className="grid grid-cols-12 gap-6 mb-8 items-start">
-													<div className="col-span-7 bg-slate-50 border border-slate-100 rounded-xl p-4">
-														<div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Amount in Words</div>
-														<div className="text-xs font-semibold text-slate-700 capitalize leading-relaxed">
+												{/* Summary Flex */}
+												<div className="flex w-full gap-6 mb-8 items-start">
+													<div className="w-7/12 bg-slate-50 print:bg-transparent border border-slate-100 print:border-transparent rounded-xl p-4">
+														<div className="text-[10px] font-bold text-slate-400 print:text-black uppercase tracking-wider mb-1">Amount in Words</div>
+														<div className="text-xs font-semibold text-slate-700 print:text-black capitalize leading-relaxed">
 															{numberToWords(grandTotal)}
 														</div>
 													</div>
-													<div className="col-span-5 space-y-2 text-xs">
-														<div className="flex justify-between text-slate-500">
+													<div className="w-5/12 space-y-2 text-xs">
+														<div className="flex justify-between text-slate-500 print:text-black">
 															<span>Subtotal</span>
 															<span>₹{order.subtotal.toFixed(2)}</span>
 														</div>
 														{order.discount > 0 && (
-															<div className="flex justify-between text-green-600 font-medium">
+															<div className="flex justify-between text-green-600 print:text-black font-medium">
 																<span>Discount {order.couponCode ? `(${order.couponCode})` : ""}</span>
 																<span>− ₹{order.discount.toFixed(2)}</span>
 															</div>
 														)}
 														{roundOff !== 0 && (
-															<div className="flex justify-between text-slate-500">
+															<div className="flex justify-between text-slate-500 print:text-black">
 																<span>Round-off</span>
 																<span>{roundOff > 0 ? "+" : ""}₹{roundOff.toFixed(2)}</span>
 															</div>
 														)}
-														<div className="h-px bg-slate-200 my-2" />
-														<div className="flex justify-between font-black text-blue-900 text-sm">
+														<div className="h-px bg-slate-200 print:bg-black my-2" />
+														<div className="flex justify-between font-black text-blue-900 print:text-black text-sm">
 															<span>Grand Total</span>
 															<span>₹{grandTotal.toFixed(2)}</span>
 														</div>
@@ -740,7 +740,7 @@ export function SaleCompletionScreen({
 												</div>
 
 												{/* Footer */}
-												<div className="border-t border-slate-200 pt-6 mt-12 grid grid-cols-2 gap-8 items-end">
+												<div className="border-t border-slate-200 print:border-black pt-6 mt-12 flex justify-between items-end">
 													<div className="space-y-1.5 text-[10px] text-slate-400">
 														<div className="font-bold text-slate-500 uppercase tracking-wide">Terms & Conditions</div>
 														<p>• Goods once sold will not be taken back without valid receipt within 7 days.</p>
