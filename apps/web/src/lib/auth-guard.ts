@@ -4,7 +4,7 @@ import {
 	session as sessionTable,
 	user as userTable,
 } from "@evaluna/db/auth-schema";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { db } from "./db";
 import {
@@ -88,19 +88,30 @@ export async function getAuthUser(
 		return null;
 	}
 
-	// 2. Check in-memory cache
-	const cached = getCachedSession(sessionToken);
-	if (cached) {
-		if (new Date() > cached.expiresAt) return null;
-		if (!cached.isActive) return null;
-		return cached;
+	// 2. Better Auth signs the session cookie as `${token}.${signature}`.
+	// The DB `session.token` column stores only the raw token (no signature),
+	// so match against both the full cookie value and the token portion before
+	// the signature — this is why the previous direct lookup always missed and
+	// every API call came back "Not logged in".
+	const dotIdx = sessionToken.lastIndexOf(".");
+	const rawToken = dotIdx > 0 ? sessionToken.slice(0, dotIdx) : sessionToken;
+	const candidateTokens = Array.from(new Set([sessionToken, rawToken]));
+
+	// 2b. Check in-memory cache (keyed on whichever token we end up matching)
+	for (const t of candidateTokens) {
+		const cached = getCachedSession(t);
+		if (cached) {
+			if (new Date() > cached.expiresAt) return null;
+			if (!cached.isActive) return null;
+			return cached;
+		}
 	}
 
 	// 3. Look up session directly in DB
 	let sessionRecord;
 	try {
 		sessionRecord = await db.query.session.findFirst({
-			where: eq(sessionTable.token, sessionToken),
+			where: inArray(sessionTable.token, candidateTokens),
 		});
 	} catch (err) {
 		console.error("[auth-guard] session lookup failed:", err);
@@ -108,8 +119,17 @@ export async function getAuthUser(
 	}
 
 	if (!sessionRecord || sessionRecord.expiresAt < new Date()) {
+		console.log(
+			"[auth-guard] no valid session for token. candidates tried:",
+			candidateTokens.length,
+			"found:",
+			!!sessionRecord,
+		);
 		return null;
 	}
+
+	// Use the actual stored token as the cache key going forward
+	const matchedToken = sessionRecord.token;
 
 	// 4. Resolve user
 	const dbUser = await db.query.user.findFirst({
@@ -150,7 +170,7 @@ export async function getAuthUser(
 		expiresAt: sessionRecord.expiresAt,
 	};
 
-	setCachedSession(sessionToken, enriched);
+	setCachedSession(matchedToken, enriched);
 	return enriched;
 }
 
