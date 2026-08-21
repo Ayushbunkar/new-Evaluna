@@ -266,8 +266,12 @@ export function SaleCompletionScreen({
 						/* Print-specific layout protection */
 						@media print {
 							body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-							.bg-blue-800 { background-color: #1e40af !important; color: #ffffff !important; }
-							th { background-color: #1e40af !important; color: #ffffff !important; }
+							${pageSize === "A4" ? `
+								.bg-blue-800 { background-color: #1e40af !important; color: #ffffff !important; }
+								th { background-color: #1e40af !important; color: #ffffff !important; }
+							` : `
+								th { background-color: #ffffff !important; color: #000000 !important; border-bottom: 2px dashed #000000 !important; }
+							`}
 							/* Fallback borders for pure black and white printer outputs */
 							.print\\:border-slate-300 { border-color: #cbd5e1 !important; }
 							.print\\:border-black { border-color: #000000 !important; }
