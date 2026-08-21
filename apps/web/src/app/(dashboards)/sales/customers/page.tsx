@@ -244,8 +244,8 @@ export default function CustomersPage() {
 			if (statusFilter !== "all" && c.status !== statusFilter) return false;
 			const q = searchTerm.toLowerCase();
 			return (
-				c.name.toLowerCase().includes(q) ||
-				c.email.toLowerCase().includes(q) ||
+				(c.name ?? "").toLowerCase().includes(q) ||
+				(c.email ?? "").toLowerCase().includes(q) ||
 				(c.phone ?? "").includes(searchTerm)
 			);
 		});
