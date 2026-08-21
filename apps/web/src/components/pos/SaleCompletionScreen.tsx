@@ -158,7 +158,7 @@ export function SaleCompletionScreen({
 		// Inject only target content and style rules
 		const pageSizeStyle = pageSize === "80mm"
 			? `
-				@page { size: 80mm auto; margin: 0; }
+				@page { size: 80mm 297mm; margin: 0; }
 				body { width: 80mm; margin: 0; padding: 4px; font-family: sans-serif; font-size: 11px; color: #000; }
 				#printable-receipt { width: 80mm; margin: 0; padding: 0; }
 			`
@@ -670,7 +670,7 @@ export function SaleCompletionScreen({
 						}
 						@page {
 							margin: ${pageSize === "A4" ? "5mm" : "0"};
-							size: ${pageSize === "A4" ? "A4 portrait" : "80mm auto"};
+							size: ${pageSize === "A4" ? "A4 portrait" : "80mm 297mm"};
 						}
 					}
 				`}} />
