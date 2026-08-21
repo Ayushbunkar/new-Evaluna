@@ -435,37 +435,62 @@ export function SaleCompletionScreen({
 			bold: {
 				fontWeight: "bold",
 			},
+			tableContainer: isA4 ? {
+				borderWidth: 1,
+				borderColor: "#e5e7eb",
+				borderRadius: 8,
+				overflow: "hidden",
+				marginBottom: 10,
+			} : {},
 			tableHeader: {
 				flexDirection: "row",
-				backgroundColor: isA4 ? "#1e40af" : "transparent",
+				backgroundColor: isA4 ? "#1d4ed8" : "transparent",
 				borderBottomWidth: isA4 ? 0 : 1,
 				borderBottomStyle: "dashed",
 				borderBottomColor: "#000000",
-				padding: isA4 ? 6 : 4,
-				marginBottom: 4,
+				padding: isA4 ? 10 : 4,
+				marginBottom: isA4 ? 0 : 4,
 			},
 			tableRow: {
 				flexDirection: "row",
 				borderBottomWidth: 1,
-				borderBottomColor: isA4 ? "#f1f5f9" : "transparent",
-				paddingVertical: isA4 ? 5 : 2,
-				marginBottom: 2,
+				borderBottomColor: isA4 ? "#e5e7eb" : "transparent",
+				paddingVertical: isA4 ? 10 : 2,
+				paddingHorizontal: isA4 ? 10 : 0,
+				marginBottom: isA4 ? 0 : 2,
 			},
-			colItem: { flex: isA4 ? 4 : 3 },
-			colQty: { flex: 1, textAlign: "right" },
-			colRate: { flex: 2, textAlign: "right" },
-			colTotal: { flex: 2, textAlign: "right" },
+			colNum: { width: "5%", textAlign: "center" },
+			colItem: { flex: 3 },
+			colSku: { width: "15%", textAlign: "center" },
+			colQty: { width: "10%", textAlign: "center" },
+			colRate: { width: "15%", textAlign: "center" },
+			colDiscount: { width: "12%", textAlign: "center" },
+			colTotal: { width: "15%", textAlign: "right" },
 			thText: {
 				color: isA4 ? "#ffffff" : "#000000",
 				fontWeight: "bold",
+				fontSize: isA4 ? 9 : 9,
 			},
-			summaryContainer: {
+			tdText: {
+				fontSize: isA4 ? 9 : 9,
+				color: "#475569",
+			},
+			summaryWrapper: {
 				flexDirection: "row",
-				justifyContent: "flex-end",
+				justifyContent: "space-between",
 				marginTop: 10,
+				gap: 20,
+			},
+			amountInWordsCard: {
+				flex: 1,
+				borderWidth: 1,
+				borderColor: "#e5e7eb",
+				borderRadius: 6,
+				padding: 10,
+				height: 50,
 			},
 			summaryBlock: {
-				width: isA4 ? 180 : "100%",
+				width: 200,
 			},
 			footer: {
 				textAlign: "center",
@@ -586,62 +611,115 @@ export function SaleCompletionScreen({
 
 					<View style={styles.separator} />
 
-					{/* Table Header */}
-					<View style={styles.tableHeader}>
-						<Text style={[styles.colItem, styles.thText]}>Item</Text>
-						<Text style={[styles.colQty, styles.thText]}>Qty</Text>
-						<Text style={[styles.colRate, styles.thText]}>Rate</Text>
-						<Text style={[styles.colTotal, styles.thText]}>Total</Text>
+					<View style={styles.tableContainer}>
+						{/* Table Header */}
+						<View style={styles.tableHeader}>
+							{isA4 && <Text style={[styles.colNum, styles.thText]}>#</Text>}
+							<Text style={[styles.colItem, styles.thText]}>Item Description</Text>
+							{isA4 && <Text style={[styles.colSku, styles.thText]}>SKU</Text>}
+							<Text style={[styles.colQty, styles.thText]}>Qty</Text>
+							<Text style={[styles.colRate, styles.thText]}>Unit Price</Text>
+							{isA4 && <Text style={[styles.colDiscount, styles.thText]}>Discount</Text>}
+							<Text style={[styles.colTotal, styles.thText]}>Total</Text>
+						</View>
+
+						{/* Table Items */}
+						{order.items.map((item, idx) => {
+							const rate = Number.parseFloat(item.price);
+							const lineTotal = rate * item.qty;
+							const qtyStr = Number.isInteger(item.qty) ? item.qty.toString() : item.qty.toFixed(3);
+							return (
+								<View key={idx} style={styles.tableRow}>
+									{isA4 && <Text style={[styles.colNum, styles.tdText]}>{idx + 1}</Text>}
+									<View style={styles.colItem}>
+										<Text style={styles.tdText}>{item.name}</Text>
+									</View>
+									{isA4 && <Text style={[styles.colSku, styles.tdText, { fontSize: 7, color: "#94a3b8" }]}>SKU-{item.productId}</Text>}
+									<Text style={[styles.colQty, styles.tdText, styles.bold, { color: "#000000" }]}>{qtyStr}</Text>
+									<Text style={[styles.colRate, styles.tdText]}>Rs.{rate.toFixed(2)}</Text>
+									{isA4 && <Text style={[styles.colDiscount, styles.tdText, { color: "#10b981" }]}>-</Text>}
+									<Text style={[styles.colTotal, styles.tdText, styles.bold, { color: "#000000" }]}>Rs.{lineTotal.toFixed(2)}</Text>
+								</View>
+							);
+						})}
 					</View>
-
-					{/* Table Items */}
-					{order.items.map((item, idx) => {
-						const rate = Number.parseFloat(item.price);
-						const lineTotal = rate * item.qty;
-						const qtyStr = Number.isInteger(item.qty) ? item.qty.toString() : item.qty.toFixed(3);
-						return (
-							<View key={idx} style={styles.tableRow}>
-								<Text style={styles.colItem}>{item.name}</Text>
-								<Text style={styles.colQty}>{qtyStr}</Text>
-								<Text style={styles.colRate}>Rs.{rate.toFixed(2)}</Text>
-								<Text style={styles.colTotal}>Rs.{lineTotal.toFixed(2)}</Text>
-							</View>
-						);
-					})}
-
-					<View style={styles.separator} />
 
 					{/* Summary */}
-					<View style={styles.summaryContainer}>
-						<View style={styles.summaryBlock}>
-							<View style={styles.row}>
-								<Text style={styles.subtitle}>Subtotal:</Text>
-								<Text style={styles.subtitle}>Rs.{order.subtotal.toFixed(2)}</Text>
+					{isA4 ? (
+						<View style={styles.summaryWrapper}>
+							<View style={styles.amountInWordsCard}>
+								<Text style={styles.cardTitle}>Amount in Words</Text>
+								<Text style={[styles.bold, { fontSize: 10 }]}>{numberToWords(grandTotal)} Rupees Only</Text>
 							</View>
-							{order.discount > 0 && (
+							<View style={styles.summaryBlock}>
 								<View style={styles.row}>
-									<Text style={styles.subtitle}>Discount:</Text>
-									<Text style={styles.subtitle}>-Rs.{order.discount.toFixed(2)}</Text>
+									<Text style={styles.tdText}>Subtotal:</Text>
+									<Text style={styles.tdText}>Rs.{order.subtotal.toFixed(2)}</Text>
 								</View>
-							)}
-							{roundOff !== 0 && (
-								<View style={styles.row}>
-									<Text style={styles.subtitle}>Round-off:</Text>
-									<Text style={styles.subtitle}>{roundOff > 0 ? "+" : ""}Rs.{roundOff.toFixed(2)}</Text>
+								{order.discount > 0 && (
+									<View style={styles.row}>
+										<Text style={styles.tdText}>Discount:</Text>
+										<Text style={styles.tdText}>-Rs.{order.discount.toFixed(2)}</Text>
+									</View>
+								)}
+								{roundOff !== 0 && (
+									<View style={styles.row}>
+										<Text style={styles.tdText}>Round-off:</Text>
+										<Text style={styles.tdText}>{roundOff > 0 ? "+" : ""}Rs.{roundOff.toFixed(2)}</Text>
+									</View>
+								)}
+								<View style={[styles.row, { marginTop: 6, paddingTop: 6, borderTopWidth: 1, borderTopColor: "#e5e7eb" }]}>
+									<Text style={[styles.bold, { fontSize: 12, color: "#1d4ed8" }]}>Grand Total:</Text>
+									<Text style={[styles.bold, { fontSize: 12, color: "#1d4ed8" }]}>Rs.{grandTotal.toFixed(2)}</Text>
 								</View>
-							)}
-							<View style={[styles.row, { marginTop: 6, paddingTop: 4, borderTopWidth: 1, borderTopColor: "#cbd5e1" }]}>
-								<Text style={[styles.bold, { fontSize: isA4 ? 12 : 10 }]}>Grand Total:</Text>
-								<Text style={[styles.bold, { fontSize: isA4 ? 12 : 10 }]}>Rs.{grandTotal.toFixed(2)}</Text>
 							</View>
 						</View>
-					</View>
+					) : (
+						<View style={styles.summaryWrapper}>
+							<View style={[styles.summaryBlock, { width: "100%" }]}>
+								<View style={styles.row}>
+									<Text style={styles.subtitle}>Subtotal:</Text>
+									<Text style={styles.subtitle}>Rs.{order.subtotal.toFixed(2)}</Text>
+								</View>
+								{order.discount > 0 && (
+									<View style={styles.row}>
+										<Text style={styles.subtitle}>Discount:</Text>
+										<Text style={styles.subtitle}>-Rs.{order.discount.toFixed(2)}</Text>
+									</View>
+								)}
+								{roundOff !== 0 && (
+									<View style={styles.row}>
+										<Text style={styles.subtitle}>Round-off:</Text>
+										<Text style={styles.subtitle}>{roundOff > 0 ? "+" : ""}Rs.{roundOff.toFixed(2)}</Text>
+									</View>
+								)}
+								<View style={[styles.row, { marginTop: 6, paddingTop: 4, borderTopWidth: 1, borderTopColor: "#cbd5e1" }]}>
+									<Text style={[styles.bold, { fontSize: 10 }]}>Grand Total:</Text>
+									<Text style={[styles.bold, { fontSize: 10 }]}>Rs.{grandTotal.toFixed(2)}</Text>
+								</View>
+							</View>
+						</View>
+					)}>
 
 					{/* Footer */}
-					<View style={styles.footer}>
-						<Text style={[styles.bold, { marginBottom: 2, fontSize: isA4 ? 10 : 8, color: "#1e3a8a" }]}>Thank you for shopping!</Text>
-						<Text>Goods once sold will not be taken back without valid receipt within 7 days</Text>
-					</View>
+					{isA4 ? (
+						<View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", marginTop: 40, borderTopWidth: 1, borderTopColor: "#e5e7eb", paddingTop: 20 }}>
+							<View>
+								<Text style={[styles.bold, { fontSize: 9, color: "#475569", marginBottom: 6, textTransform: "uppercase" }]}>Terms & Conditions</Text>
+								<Text style={{ fontSize: 8, color: "#94a3b8", marginBottom: 4 }}>• Goods once sold will not be taken back without valid receipt within 7 days.</Text>
+								<Text style={{ fontSize: 8, color: "#94a3b8" }}>• This is a computer generated invoice and requires no physical signature.</Text>
+							</View>
+							<View style={{ alignItems: "center" }}>
+								<View style={{ width: 120, borderBottomWidth: 1, borderBottomColor: "#cbd5e1", marginBottom: 6 }} />
+								<Text style={{ fontSize: 9, color: "#64748b", fontStyle: "italic" }}>Authorized Signatory</Text>
+							</View>
+						</View>
+					) : (
+						<View style={styles.footer}>
+							<Text style={[styles.bold, { marginBottom: 2, fontSize: 8, color: "#1e3a8a" }]}>Thank you for shopping!</Text>
+							<Text>Goods once sold will not be taken back without valid receipt within 7 days</Text>
+						</View>
+					)}
 				</Page>
 			</Document>
 		);
