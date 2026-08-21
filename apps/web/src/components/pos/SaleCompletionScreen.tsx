@@ -497,10 +497,7 @@ export function SaleCompletionScreen({
 						}
 						#printable-receipt {
 							display: block !important;
-							position: absolute !important;
-							left: 0 !important;
-							top: 0 !important;
-							margin: 0 !important;
+							margin: 0 auto !important;
 							padding: 0 !important;
 							border: none !important;
 							box-shadow: none !important;
@@ -514,7 +511,7 @@ export function SaleCompletionScreen({
 							page-break-inside: avoid;
 						}
 						@page {
-							margin: 5mm;
+							margin: ${pageSize === "A4" ? "5mm" : "0"};
 							size: ${pageSize === "A4" ? "A4 portrait" : "80mm auto"};
 						}
 					}
@@ -602,16 +599,15 @@ export function SaleCompletionScreen({
 
 					<div className="flex min-h-0 flex-1 overflow-hidden">
 						{/* ── Center-Aligned Interactive Preview Canvas ── */}
-						<div className="flex min-h-0 flex-1 flex-col bg-slate-100 overflow-auto p-6 print:p-0 print:bg-white justify-start items-center">
-							<ScrollArea className="w-full flex-1">
-								<div className="flex min-h-full items-center justify-center p-4 print:p-0">
-									<motion.div
-										id="printable-receipt"
-										ref={receiptRef}
-										layout
-										animate={{
-											width: pageSize === "A4" ? "210mm" : "80mm",
-										}}
+						<div className="flex min-h-0 flex-1 bg-slate-100 overflow-auto p-6 print:p-0 print:bg-white">
+							<div className="m-auto flex min-h-full min-w-max items-center justify-center print:m-0 print:block">
+								<motion.div
+									id="printable-receipt"
+									ref={receiptRef}
+									layout
+									animate={{
+										width: pageSize === "A4" ? "210mm" : "80mm",
+									}}
 										transition={{ type: "spring", stiffness: 300, damping: 30 }}
 										className={`paper-sheet bg-white shadow-xl border border-slate-200 print:shadow-none print:border-none mx-auto ${
 											pageSize === "A4"
@@ -805,17 +801,17 @@ export function SaleCompletionScreen({
 															const rate = Number.parseFloat(item.price);
 															const lineTotal = rate * item.qty;
 															return (
-																<tr key={idx} className="align-top">
-																	<td className="py-1">
-																		<div className="font-bold">{item.name}</div>
-																		<div className="text-[10px] text-slate-600 pl-1">
+																<tr key={idx} className="align-top border-b border-dashed border-slate-300 last:border-b-0">
+																	<td className="py-2">
+																		<div className="font-bold leading-tight">{item.name}</div>
+																		<div className="text-[10px] text-slate-600 pl-1 mt-0.5">
 																			{Number.isInteger(item.qty) ? item.qty : item.qty.toFixed(3)} x Rs.{rate.toFixed(2)}
 																		</div>
 																	</td>
-																	<td className="py-1 text-center">
+																	<td className="py-2 text-center align-middle">
 																		{Number.isInteger(item.qty) ? item.qty : item.qty.toFixed(3)}
 																	</td>
-																	<td className="py-1 text-right">
+																	<td className="py-2 text-right align-middle font-medium">
 																		Rs.{lineTotal.toFixed(2)}
 																	</td>
 																</tr>
@@ -863,7 +859,6 @@ export function SaleCompletionScreen({
 										)}
 									</motion.div>
 								</div>
-							</ScrollArea>
 						</div>
 
 						{/* ── Right Actions Panel ── */}
