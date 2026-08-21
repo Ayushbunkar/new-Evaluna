@@ -37,11 +37,16 @@ export default function TRPCProvider({
 	);
 	const [trpcClient] = useState(() =>
 		trpc.createClient({
+			// In @trpc/client v10.45 the data transformer must live at the root of
+			// createClient (opts.transformer). Passing it inside httpBatchLink is
+			// ignored at runtime, leaving an identity transformer while the server
+			// uses superjson — which breaks response deserialization
+			// ("Unable to transform response from server").
+			transformer: superjson,
 			links: [
 				offlineSyncLink,
 				httpBatchLink({
 					url: `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/api/trpc`,
-					transformer: superjson,
 				}),
 			],
 		}),
