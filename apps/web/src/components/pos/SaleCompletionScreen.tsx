@@ -502,7 +502,33 @@ export function SaleCompletionScreen({
 							border: none !important;
 							box-shadow: none !important;
 							width: ${pageSize === "A4" ? "210mm" : "80mm"} !important;
+							${pageSize === "80mm" ? `
+								font-family: 'Courier New', Courier, monospace !important;
+								text-align: left !important;
+								color: #000000 !important;
+							` : ""}
 						}
+						${pageSize === "80mm" ? `
+							#printable-receipt * {
+								font-family: 'Courier New', Courier, monospace !important;
+								color: #000000 !important;
+							}
+							#printable-receipt .text-left { text-align: left !important; }
+							#printable-receipt .text-center { text-align: center !important; }
+							#printable-receipt .text-right { text-align: right !important; }
+							#printable-receipt .border-dashed, 
+							#printable-receipt tr.border-b.border-dashed, 
+							#printable-receipt div.border-t.border-dashed {
+								border-style: dashed !important;
+								border-color: #000000 !important;
+								border-width: 0 0 1px 0 !important;
+								display: block;
+								width: 100%;
+							}
+							#printable-receipt table tr.border-b.border-dashed {
+								display: table-row !important;
+							}
+						` : ""}
 						* {
 							-webkit-print-color-adjust: exact !important;
 							print-color-adjust: exact !important;
