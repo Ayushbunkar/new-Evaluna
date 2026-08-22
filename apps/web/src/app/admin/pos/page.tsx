@@ -113,7 +113,7 @@ export default function POSPage() {
 		if (unit.includes("gm") || unit.includes("gram") || name.includes(" gm") || name.includes("gm ") || name.endsWith("gm") || name.includes("gram")) return { group: "weight" as const, activeUnit: "KG" as const };
 		if (unit.includes("ml") || name.includes("ml") || name.includes("ml ") || name.endsWith("ml")) return { group: "volume" as const, activeUnit: "L" as const };
 		if (unit === "l" || unit.includes("liter") || unit.includes("litre") || name.includes(" l ") || name.endsWith(" l") || name.includes("liter") || name.includes("litre")) return { group: "volume" as const, activeUnit: "L" as const };
-		return { group: "none" as const, activeUnit: "UNIT" as const };
+		return { group: "weight" as const, activeUnit: "KG" as const };
 	};
 
 	const getItemTotal = (item: any) => {

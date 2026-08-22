@@ -196,7 +196,7 @@ export default function POSPage() {
 		if (unit === "l" || unit.includes("liter") || unit.includes("litre") || name.includes(" l ") || name.endsWith(" l") || name.includes("liter") || name.includes("litre")) {
 			return { group: "volume" as const, activeUnit: "L" as const };
 		}
-		return { group: "none" as const, activeUnit: "UNIT" as const };
+		return { group: "weight" as const, activeUnit: "KG" as const };
 	};
 
 	const getItemTotal = (item: any) => {
