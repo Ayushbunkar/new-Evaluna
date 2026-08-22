@@ -106,7 +106,7 @@ export default function POSPage() {
 	}, []);
 
 	const subtotal = cart.reduce(
-		(acc, item) => acc + Number.parseFloat(item.price) * item.qty,
+		(acc, item) => acc + getItemTotal(item),
 		0,
 	);
 	const discount = appliedCoupon?.discount || 0;
@@ -140,6 +140,58 @@ export default function POSPage() {
 		setAppliedCoupon(null);
 	};
 
+	const detectUnitGroup = (item: any) => {
+		const name = (item.name || "").toLowerCase();
+		const unit = (item.unit || "").toLowerCase();
+		
+		// Weight detection
+		if (unit.includes("kg") || unit.includes("kilogram") || name.includes(" kg") || name.includes("kg ") || name.endsWith("kg")) {
+			return { group: "weight" as const, activeUnit: "KG" as const };
+		}
+		if (unit.includes("gm") || unit.includes("gram") || name.includes(" gm") || name.includes("gm ") || name.endsWith("gm") || name.includes("gram")) {
+			return { group: "weight" as const, activeUnit: "KG" as const };
+		}
+		
+		// Volume detection
+		if (unit.includes("ml") || name.includes("ml") || name.includes("ml ") || name.endsWith("ml")) {
+			return { group: "volume" as const, activeUnit: "L" as const };
+		}
+		if (unit === "l" || unit.includes("liter") || unit.includes("litre") || name.includes(" l ") || name.endsWith(" l") || name.includes("liter") || name.includes("litre")) {
+			return { group: "volume" as const, activeUnit: "L" as const };
+		}
+		
+		return { group: "none" as const, activeUnit: "UNIT" as const };
+	};
+
+	const getItemTotal = (item: any) => {
+		const price = Number.parseFloat(item.price);
+		if (item.activeUnit === "GM" || item.activeUnit === "ML") {
+			return (price / 1000) * item.qty;
+		}
+		return price * item.qty;
+	};
+
+	const toggleUnit = (id: number, newUnit: "KG" | "GM" | "L" | "ML") => {
+		setCart((prev) =>
+			prev.map((item) => {
+				if (item.id === id) {
+					let newQty = item.qty;
+					if (item.activeUnit === "KG" && newUnit === "GM") {
+						newQty = item.qty * 1000;
+					} else if (item.activeUnit === "GM" && newUnit === "KG") {
+						newQty = item.qty / 1000;
+					} else if (item.activeUnit === "L" && newUnit === "ML") {
+						newQty = item.qty * 1000;
+					} else if (item.activeUnit === "ML" && newUnit === "L") {
+						newQty = item.qty / 1000;
+					}
+					return { ...item, activeUnit: newUnit, qty: newQty };
+				}
+				return item;
+			}),
+		);
+	};
+
 	// Barcode Scanner Listener
 	const addToCart = (product: any, qty = 1) => {
 		setCart((prev) => {
@@ -149,7 +201,8 @@ export default function POSPage() {
 					item.id === product.id ? { ...item, qty: item.qty + qty } : item,
 				);
 			}
-			return [...prev, { ...product, qty: qty }];
+			const unitCfg = detectUnitGroup(product);
+			return [...prev, { ...product, qty: qty, activeUnit: unitCfg.activeUnit, unitGroup: unitCfg.group }];
 		});
 	};
 
@@ -234,7 +287,8 @@ export default function POSPage() {
 		setCart((prev) =>
 			prev.map((item) => {
 				if (item.id === id) {
-					const newQty = Math.max(0.001, item.qty + delta);
+					const effectiveDelta = (item.activeUnit === "GM" || item.activeUnit === "ML") ? delta * 100 : delta;
+					const newQty = Math.max(0.001, item.qty + effectiveDelta);
 					return { ...item, qty: newQty };
 				}
 				return item;
@@ -264,11 +318,14 @@ export default function POSPage() {
 		setLastPayments(payments);
 		checkoutMutation.mutate({
 			customerId: customer?.customerId || undefined,
-			items: cart.map((c) => ({
-				productId: c.id,
-				quantity: c.qty,
-				price: c.price,
-			})),
+			items: cart.map((c) => {
+				const baseQty = (c.activeUnit === "GM" || c.activeUnit === "ML") ? c.qty / 1000 : c.qty;
+				return {
+					productId: c.id,
+					quantity: baseQty,
+					price: c.price,
+				};
+			}),
 			payments: payments,
 			isOfflineSync: false,
 			couponId: appliedCoupon?.id,
@@ -400,12 +457,76 @@ export default function POSPage() {
 												{item.name}
 											</div>
 											<div className="shrink-0 whitespace-nowrap text-muted-foreground text-xs">
-												₹{Number.parseFloat(item.price).toFixed(2)} / unit
+												{item.activeUnit === "GM"
+													? `₹${(Number.parseFloat(item.price) / 1000).toFixed(2)} / gm`
+													: item.activeUnit === "ML"
+													? `₹${(Number.parseFloat(item.price) / 1000).toFixed(2)} / ml`
+													: `₹${Number.parseFloat(item.price).toFixed(2)} / unit`}
 											</div>
 										</div>
 
-										<div className="flex w-full items-center justify-between gap-2 min-w-0">
-											<div className="flex h-8 items-center rounded-md border">
+										{/* Selling Unit Toggle */}
+										{item.unitGroup && item.unitGroup !== "none" && (
+											<div className="flex items-center justify-between gap-2 mt-1 py-1 px-2 bg-muted/30 rounded-md border border-dashed">
+												<span className="text-[11px] font-medium text-muted-foreground">Selling unit</span>
+												<div className="flex rounded-full border border-blue-200 bg-white p-0.5 text-[10px] font-bold">
+													{item.unitGroup === "weight" ? (
+														<>
+															<button
+																type="button"
+																onClick={() => toggleUnit(item.id, "KG")}
+																className={`px-2.5 py-0.5 rounded-full transition-colors ${
+																	item.activeUnit === "KG"
+																		? "bg-blue-600 text-white"
+																		: "text-blue-600 hover:bg-blue-50"
+																}`}
+															>
+																KGS
+															</button>
+															<button
+																type="button"
+																onClick={() => toggleUnit(item.id, "GM")}
+																className={`px-2.5 py-0.5 rounded-full transition-colors ${
+																	item.activeUnit === "GM"
+																		? "bg-blue-600 text-white"
+																		: "text-blue-600 hover:bg-blue-50"
+																}`}
+															>
+																GMS
+															</button>
+														</>
+													) : (
+														<>
+															<button
+																type="button"
+																onClick={() => toggleUnit(item.id, "L")}
+																className={`px-2.5 py-0.5 rounded-full transition-colors ${
+																	item.activeUnit === "L"
+																		? "bg-blue-600 text-white"
+																		: "text-blue-600 hover:bg-blue-50"
+																}`}
+															>
+																L
+															</button>
+															<button
+																type="button"
+																onClick={() => toggleUnit(item.id, "ML")}
+																className={`px-2.5 py-0.5 rounded-full transition-colors ${
+																	item.activeUnit === "ML"
+																		? "bg-blue-600 text-white"
+																		: "text-blue-600 hover:bg-blue-50"
+																}`}
+															>
+																ML
+															</button>
+														</>
+													)}
+												</div>
+											</div>
+										)}
+
+										<div className="flex w-full items-center justify-between gap-2 min-w-0 mt-1">
+											<div className="flex h-8 items-center rounded-md border bg-background">
 												<Button
 													variant="ghost"
 													size="icon"
@@ -430,10 +551,7 @@ export default function POSPage() {
 											</div>
 											<div className="flex items-center gap-3">
 												<span className="font-bold text-sm">
-													₹
-													{(Number.parseFloat(item.price) * item.qty).toFixed(
-														2,
-													)}
+													₹{getItemTotal(item).toFixed(2)}
 												</span>
 												<Button
 													variant="ghost"
