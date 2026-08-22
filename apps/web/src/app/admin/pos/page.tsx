@@ -105,6 +105,36 @@ export default function POSPage() {
 		};
 	}, []);
 
+	// ── Unit helpers (must be before `subtotal` which calls getItemTotal) ──
+	const detectUnitGroup = (item: any) => {
+		const name = (item.name || "").toLowerCase();
+		const unit = (item.unit || "").toLowerCase();
+		if (unit.includes("kg") || unit.includes("kilogram") || name.includes(" kg") || name.includes("kg ") || name.endsWith("kg")) return { group: "weight" as const, activeUnit: "KG" as const };
+		if (unit.includes("gm") || unit.includes("gram") || name.includes(" gm") || name.includes("gm ") || name.endsWith("gm") || name.includes("gram")) return { group: "weight" as const, activeUnit: "KG" as const };
+		if (unit.includes("ml") || name.includes("ml") || name.includes("ml ") || name.endsWith("ml")) return { group: "volume" as const, activeUnit: "L" as const };
+		if (unit === "l" || unit.includes("liter") || unit.includes("litre") || name.includes(" l ") || name.endsWith(" l") || name.includes("liter") || name.includes("litre")) return { group: "volume" as const, activeUnit: "L" as const };
+		return { group: "none" as const, activeUnit: "UNIT" as const };
+	};
+
+	const getItemTotal = (item: any) => {
+		const price = Number.parseFloat(item.price);
+		return (item.activeUnit === "GM" || item.activeUnit === "ML") ? (price / 1000) * item.qty : price * item.qty;
+	};
+
+	const toggleUnit = (id: number, newUnit: "KG" | "GM" | "L" | "ML") => {
+		setCart((prev) =>
+			prev.map((item) => {
+				if (item.id !== id) return item;
+				let newQty = item.qty;
+				if (item.activeUnit === "KG" && newUnit === "GM") newQty = item.qty * 1000;
+				else if (item.activeUnit === "GM" && newUnit === "KG") newQty = item.qty / 1000;
+				else if (item.activeUnit === "L" && newUnit === "ML") newQty = item.qty * 1000;
+				else if (item.activeUnit === "ML" && newUnit === "L") newQty = item.qty / 1000;
+				return { ...item, activeUnit: newUnit, qty: newQty };
+			}),
+		);
+	};
+
 	const subtotal = cart.reduce(
 		(acc, item) => acc + getItemTotal(item),
 		0,
@@ -138,58 +168,6 @@ export default function POSPage() {
 
 	const removeCoupon = () => {
 		setAppliedCoupon(null);
-	};
-
-	const detectUnitGroup = (item: any) => {
-		const name = (item.name || "").toLowerCase();
-		const unit = (item.unit || "").toLowerCase();
-		
-		// Weight detection
-		if (unit.includes("kg") || unit.includes("kilogram") || name.includes(" kg") || name.includes("kg ") || name.endsWith("kg")) {
-			return { group: "weight" as const, activeUnit: "KG" as const };
-		}
-		if (unit.includes("gm") || unit.includes("gram") || name.includes(" gm") || name.includes("gm ") || name.endsWith("gm") || name.includes("gram")) {
-			return { group: "weight" as const, activeUnit: "KG" as const };
-		}
-		
-		// Volume detection
-		if (unit.includes("ml") || name.includes("ml") || name.includes("ml ") || name.endsWith("ml")) {
-			return { group: "volume" as const, activeUnit: "L" as const };
-		}
-		if (unit === "l" || unit.includes("liter") || unit.includes("litre") || name.includes(" l ") || name.endsWith(" l") || name.includes("liter") || name.includes("litre")) {
-			return { group: "volume" as const, activeUnit: "L" as const };
-		}
-		
-		return { group: "none" as const, activeUnit: "UNIT" as const };
-	};
-
-	const getItemTotal = (item: any) => {
-		const price = Number.parseFloat(item.price);
-		if (item.activeUnit === "GM" || item.activeUnit === "ML") {
-			return (price / 1000) * item.qty;
-		}
-		return price * item.qty;
-	};
-
-	const toggleUnit = (id: number, newUnit: "KG" | "GM" | "L" | "ML") => {
-		setCart((prev) =>
-			prev.map((item) => {
-				if (item.id === id) {
-					let newQty = item.qty;
-					if (item.activeUnit === "KG" && newUnit === "GM") {
-						newQty = item.qty * 1000;
-					} else if (item.activeUnit === "GM" && newUnit === "KG") {
-						newQty = item.qty / 1000;
-					} else if (item.activeUnit === "L" && newUnit === "ML") {
-						newQty = item.qty * 1000;
-					} else if (item.activeUnit === "ML" && newUnit === "L") {
-						newQty = item.qty / 1000;
-					}
-					return { ...item, activeUnit: newUnit, qty: newQty };
-				}
-				return item;
-			}),
-		);
 	};
 
 	// Barcode Scanner Listener
